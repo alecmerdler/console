@@ -25,7 +25,7 @@ let config: webpack.Configuration = {
     chunkFilename: '[name]-[chunkhash].js',
   },
   resolve: {
-    extensions: ['.glsl', '.ts', '.tsx', '.js', '.jsx'],
+    extensions: ['.glsl', '.purs', '.ts', '.tsx', '.js', '.jsx'],
   },
   node: {
     fs: 'empty',
@@ -53,6 +53,22 @@ let config: webpack.Configuration = {
             }
           },
         ],
+      },
+      {
+        test: /\.purs$/,
+        loader: 'purs-loader',
+        // exclude: /node_modules/,
+        options: {
+          psc: 'psa',
+          src: ['node_modules/@purescript/**/*.purs', 'public/**/*.purs'],
+          output: path.resolve(__dirname, 'public/dist'),
+          // bundleOutput: path.resolve(__dirname, 'public/dist'),
+          // bundle: true,
+          pscArgs: {
+            // sourceMaps: true
+          },
+          // watch: true,
+        }
       },
       {
         test: /\.s?css$/,

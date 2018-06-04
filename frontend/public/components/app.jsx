@@ -39,6 +39,11 @@ import { coFetch } from '../co-fetch';
 import '../vendor.scss';
 import '../style.scss';
 
+// Testing PureScript
+import * as Example from '../example';
+const greeting = Example.greet();
+console.log(greeting);
+
 // Edge lacks URLSearchParams
 import 'url-search-params-polyfill';
 

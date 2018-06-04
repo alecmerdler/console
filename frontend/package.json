@@ -54,6 +54,7 @@
     ]
   },
   "dependencies": {
+    "@purescript/console": "^3.0.0",
     "brace": "0.11.x",
     "classnames": "2.x",
     "core-js": "2.x",
@@ -126,6 +127,9 @@
     "protractor": "5.x",
     "protractor-fail-fast": "3.x",
     "protractor-jasmine2-screenshot-reporter": "0.5.x",
+    "purescript": "^0.12.0",
+    "purescript-psa": "^0.6.0",
+    "purs-loader": "^3.1.4",
     "react-test-renderer": "16.x",
     "resolve-url-loader": "2.x",
     "sass-loader": "6.x",
