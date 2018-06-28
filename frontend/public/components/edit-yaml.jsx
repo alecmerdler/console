@@ -21,6 +21,7 @@ import { TEMPLATES } from '../yaml-templates';
 let id = 0;
 
 ace.acequire('ace/ext/language_tools').addCompleter({getCompletions});
+const { Range } = ace.acequire('ace/range');
 
 const generateObjToLoad = (kind, templateName, namespace = 'default') => {
   const kindObj = modelFor(kind) || {};
@@ -158,6 +159,7 @@ export const EditYAML = connect(stateToProps)(
 
       try {
         yaml = safeDump(obj);
+        console.log(yaml);
       } catch (e) {
         yaml = `Error dumping YAML: ${e}`;
       }
@@ -177,6 +179,12 @@ export const EditYAML = connect(stateToProps)(
       this.displayedVersion = _.get(obj, 'metadata.resourceVersion');
       this.setState({initialized: true, stale: false});
       this.resize_();
+
+      // TODO(alecmerdler): Highlight line with desired fields from JSONPath in URL query parameters
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('jsonpath')) {
+        // this.ace.getSession().addMarker(new Range(1, 0, 15, 0), 'ace_active-line', 'fullLine');
+      }
     }
 
     save() {
