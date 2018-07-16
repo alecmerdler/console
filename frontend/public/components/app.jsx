@@ -37,6 +37,7 @@ import { ClusterServiceVersionModel, CatalogSourceModel } from '../models';
 import { referenceForModel } from '../module/k8s';
 import k8sActions from '../module/k8s/k8s-actions';
 import { coFetch } from '../co-fetch';
+import { $run, $worker } from '../worker';
 import '../vendor.scss';
 import '../style.scss';
 
@@ -282,3 +283,9 @@ render((
     </Router>
   </Provider>
 ), document.getElementById('app'));
+
+const worker = $worker((e) => {
+  fetch('https://google.com')
+    .then(res => console.log(res));
+});
+$run(worker)();
