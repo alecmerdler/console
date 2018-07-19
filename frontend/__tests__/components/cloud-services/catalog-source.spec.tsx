@@ -150,7 +150,7 @@ describe(CatalogSourceDetailsPage.displayName, () => {
 
   beforeEach(() => {
     const match = {isExact: true, params: {ns: 'default'}, path: '', url: ''};
-    wrapper = shallow(<CatalogSourceDetailsPage match={match} />);
+    wrapper = shallow(<CatalogSourceDetailsPage.WrappedComponent match={match} catalogNamespace="kube-system" />);
   });
 
   it('renders catalog display name', () => {
@@ -190,7 +190,7 @@ describe(CreateSubscriptionYAML.displayName, () => {
   beforeEach(() => {
     registerTemplateSpy = spyOn(yamlTemplates, 'registerTemplate');
 
-    wrapper = shallow(<CreateSubscriptionYAML match={{isExact: true, url: '', path: '', params: {ns: 'default', pkgName: testPackage.packageName}}} />);
+    wrapper = shallow(<CreateSubscriptionYAML.WrappedComponent match={{isExact: true, url: '', path: '', params: {ns: 'default', pkgName: testPackage.packageName}}} />);
   });
 
   it('renders a `Firehose` for the catalog ConfigMap', () => {
