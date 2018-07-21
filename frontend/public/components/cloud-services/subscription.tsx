@@ -10,6 +10,7 @@ import { Map as ImmutableMap } from 'immutable';
 import { List, ListHeader, ColHead, DetailsPage, ListPage } from '../factory';
 import { MsgBox, ResourceLink, ResourceCog, navFactory, Cog, ResourceSummary, LoadingInline, makeQuery, makeReduxID } from '../utils';
 import { SubscriptionKind, SubscriptionState, Package, InstallPlanApproval, ClusterServiceVersionKind } from './index';
+import { withCatalogNamespace } from './utils';
 import { referenceForModel, k8sKill, k8sUpdate } from '../../module/k8s';
 import { SubscriptionModel, ClusterServiceVersionModel, CatalogSourceModel, ConfigMapModel, InstallPlanModel } from '../../models';
 import { createDisableApplicationModal } from '../modals/disable-application-modal';
@@ -84,6 +85,7 @@ export const SubscriptionsPage: React.SFC<SubscriptionsPageProps> = (props) => <
 const stateToProps = ({k8s}, {obj}) => ({
   installedCSV: k8s.getIn([makeReduxID(ClusterServiceVersionModel, makeQuery(obj.metadata.namespace)), 'data'], ImmutableMap())
     .find((csv, key) => csv.getIn(['metadata', 'name']) === _.get(obj, 'status.installedCSV')),
+  // FIXME(alecmerdler): Use `operator-lifecycle-manager` if running on OpenShift
   pkg: (safeLoad(k8s.getIn([makeReduxID(ConfigMapModel, makeQuery('tectonic-system', null, null, obj.spec.source)), 'data', 'data', 'packages'], null)) || [])
     .find((pkg: Package) => pkg.packageName === obj.spec.name),
 });
@@ -187,7 +189,7 @@ export class SubscriptionUpdates extends React.Component<SubscriptionUpdatesProp
   }
 }
 
-export const SubscriptionDetailsPage: React.SFC<SubscriptionDetailsPageProps> = (props) => <DetailsPage
+export const SubscriptionDetailsPage = withCatalogNamespace((props: SubscriptionDetailsPageProps) => <DetailsPage
   {...props}
   namespace={props.match.params.ns}
   kind={referenceForModel(SubscriptionModel)}
@@ -198,10 +200,11 @@ export const SubscriptionDetailsPage: React.SFC<SubscriptionDetailsPageProps> = 
   ]}
   resources={[
     // FIXME: Only including `tectonic-ocs` catalog's configmap, need to revise when we support more catalog sources
-    {kind: ConfigMapModel.kind, name: 'tectonic-ocs', namespace: 'tectonic-system', isList: false, prop: 'configMap'},
+    // FIXME(alecmerdler): Use `operator-lifecycle-manager` if running on OpenShift
+    {kind: ConfigMapModel.kind, name: 'tectonic-ocs', namespace: props.catalogNamespace, isList: false, prop: 'configMap'},
     {kind: referenceForModel(ClusterServiceVersionModel), namespace: props.namespace, isList: true, prop: 'clusterServiceVersion'},
   ]}
-  menuActions={Cog.factory.common} />;
+  menuActions={Cog.factory.common} />);
 
 export type SubscriptionsPageProps = {
   namespace?: string;
@@ -243,6 +246,7 @@ export type SubscriptionDetailsProps = {
 export type SubscriptionDetailsPageProps = {
   match: match<{ns: string, name: string}>;
   namespace: string;
+  catalogNamespace: string;
 };
 
 SubscriptionHeader.displayName = 'SubscriptionHeader';

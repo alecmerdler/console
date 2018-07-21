@@ -107,6 +107,7 @@ export const CatalogSourceDetailsPage: React.SFC<CatalogSourceDetailsPageProps> 
     resources={[{
       kind: referenceForModel(CatalogSourceModel),
       name: 'tectonic-ocs',
+      // FIXME(alecmerdler): Use `operator-lifecycle-manager` if running on OpenShift
       namespace: 'tectonic-system',
       isList: false,
       prop: 'catalogSource',
@@ -118,6 +119,7 @@ export const CatalogSourceDetailsPage: React.SFC<CatalogSourceDetailsPageProps> 
       kind: 'ConfigMap',
       isList: false,
       name: 'tectonic-ocs',
+      // FIXME(alecmerdler): Use `operator-lifecycle-manager` if running on OpenShift
       namespace: 'tectonic-system',
       prop: 'configMap'}]}>
     {/* FIXME(alecmerdler): Hack because `Firehose` injects props without TypeScript knowing about it */}
@@ -154,6 +156,7 @@ export const CreateSubscriptionYAML: React.SFC<CreateSubscriptionYAMLProps> = (p
     kind: 'ConfigMap',
     isList: false,
     name: 'tectonic-ocs',
+    // FIXME(alecmerdler): Use `operator-lifecycle-manager` if running on OpenShift
     namespace: 'tectonic-system',
     prop: 'ConfigMap'
   }]}>

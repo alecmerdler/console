@@ -90,6 +90,7 @@ export const InstallPlanDetails: React.SFC<InstallPlanDetailsProps> = ({obj}) =>
               </dd>) }
               <dt>Catalog Sources</dt>
               { (_.get(obj.status, 'catalogSources') || []).map((catalogName, i) => <dd key={i}>
+                {/* FIXME(alecmerdler): Use `operator-lifecycle-manager` if running on OpenShift */}
                 <ResourceLink kind={referenceForModel(CatalogSourceModel)} name={catalogName} namespace="tectonic-system" title={catalogName} />
               </dd>) }
             </dl>
