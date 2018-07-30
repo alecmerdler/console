@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: tectonic-console-ingress
+  namespace: tectonic-system
+  labels:
+    tectonic-operators.coreos.com/managed-by: tectonic-utility-operator
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    kubernetes.io/ingress.class: "tectonic"
+    tectonic-operators.coreos.com/upgrade-strategy: Patch
+    tectonic-operators.coreos.com/upgrade-behaviour: CreateOrUpgrade
+    nginx.ingress.kubernetes.io/affinity: cookie
+    nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+    nginx.ingress.kubernetes.io/session-cookie-name: tectonic-affinity
+spec:
+  tls:
+  - hosts:
+    - {{.IngressConfig.ConsoleBaseHost}}
+    secretName: tectonic-ingress-tls-secret
+  rules:
+  - host: {{.IngressConfig.ConsoleBaseHost}}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: tectonic-console
+          servicePort: 80
