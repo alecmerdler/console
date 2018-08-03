@@ -14,6 +14,7 @@ import { breadcrumbsForOwnerRefs } from './utils/breadcrumbs';
 import { EnvironmentPage } from './environment';
 import { formatDuration } from './utils/datetime';
 import { CamelCaseWrap } from './utils/camel-case-wrap';
+import { referenceForModel } from '../module/k8s';
 
 const menuActions = [Cog.factory.EditEnvironment, ...Cog.factory.common];
 const validReadinessStates = new Set(['Ready', 'PodCompleted']);
@@ -194,7 +195,7 @@ const Details = ({obj: pod}) => {
         <div className="col-sm-6">
           <ResourceSummary resource={pod} showPodSelector={false} showNodeSelector={false}>
             <dt>Node Selector</dt>
-            <dd><Selector kind="Node" selector={pod.spec.nodeSelector} /></dd>
+            <dd><Selector kind={referenceForModel(NodeModel)} selector={pod.spec.nodeSelector} /></dd>
           </ResourceSummary>
         </div>
         <div className="col-sm-6">

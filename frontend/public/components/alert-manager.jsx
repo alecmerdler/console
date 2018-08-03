@@ -7,7 +7,7 @@ import { ColHead, List, ListHeader, ListPage, ResourceRow, DetailsPage } from '.
 import { SectionHeading, LabelList, navFactory, ResourceLink, Selector, Firehose, LoadingInline, pluralize } from './utils';
 import { SettingsRow, SettingsContent } from './cluster-settings/cluster-settings';
 import { configureReplicaCountModal } from './modals';
-import { AlertmanagerModel } from '../models';
+import { AlertmanagerModel, NodeModel } from '../models';
 
 class Details extends SafetyFirst {
   constructor(props) {
@@ -52,7 +52,7 @@ class Details extends SafetyFirst {
               <dt>Labels</dt>
               <dd><LabelList kind="Alertmanager" labels={metadata.labels} /></dd>
               {spec.nodeSelector && <dt>Alert Manager Node Selector</dt>}
-              {spec.nodeSelector && <dd><Selector selector={spec.nodeSelector} kind="Node" /></dd>}
+              {spec.nodeSelector && <dd><Selector selector={spec.nodeSelector} kind={referenceForModel(NodeModel)} /></dd>}
             </dl>
           </div>
           <div className="col-sm-6 col-xs-12">
@@ -127,7 +127,7 @@ const AlertManagerRow = ({obj: alertManager}) => {
     </div>
     <div className="col-md-1 hidden-sm hidden-xs">{spec.version}</div>
     <div className="col-md-3 col-sm-3 hidden-xs">
-      <Selector selector={spec.nodeSelector} kind="Node" />
+      <Selector selector={spec.nodeSelector} kind={referenceForModel(NodeModel)} />
     </div>
   </ResourceRow>;
 };

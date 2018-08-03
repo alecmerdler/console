@@ -2,9 +2,11 @@ import * as _ from 'lodash-es';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import {ColHead, DetailsPage, List, ListHeader, ListPage} from './factory';
-import {Cog, navFactory, ResourceCog, SectionHeading, ResourceLink, ResourceSummary, Selector} from './utils';
+import { ColHead, DetailsPage, List, ListHeader, ListPage } from './factory';
+import { Cog, navFactory, ResourceCog, SectionHeading, ResourceLink, ResourceSummary, Selector } from './utils';
 import { registerTemplate } from '../yaml-templates';
+import { referenceForModel } from '../module/k8s';
+import { NamespaceModel } from '../models';
 
 registerTemplate('v1.NetworkPolicy', `apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -50,7 +52,7 @@ const Row = ({obj: np}) => <div className="row co-resource-list__item">
   <div className="col-xs-5 co-break-word">
     {
       _.isEmpty(np.spec.podSelector) ?
-        <Link to={`/search/ns/${np.metadata.namespace}?kind=Pod`}>{`All pods within ${np.metadata.namespace}`}</Link> :
+        <Link to={`/search/ns/${np.metadata.namespace}?kind=${referenceForModel(PodModel)}`}>{`All pods within ${np.metadata.namespace}`}</Link> :
         <Selector selector={np.spec.podSelector} namespace={np.metadata.namespace} />
     }
   </div>
@@ -74,7 +76,7 @@ const IngressRow = ({ingress, namespace, podSelector}) => {
   const style = {margin: '5px 0'};
   _.each(ingress.from, ({namespaceSelector, podSelector: ps}) => {
     if (namespaceSelector) {
-      nsSelectors.push(<div key={i++} style={style}><Selector selector={namespaceSelector} kind="Namespace" /></div>);
+      nsSelectors.push(<div key={i++} style={style}><Selector selector={namespaceSelector} kind={referenceForModel(NamespaceModel)} /></div>);
     } else {
       podSelectors.push(<div key={i++} style={style}><Selector selector={ps} namespace={namespace} /></div>);
     }

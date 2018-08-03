@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import { ColHead, List, ListHeader, ListPage, ResourceRow } from './factory';
 import { Cog, ResourceCog, ResourceLink, Selector } from './utils';
-import { ServiceMonitorModel } from '../models';
+import { ServiceMonitorModel, ServiceModel } from '../models';
 import { referenceForModel } from '../module/k8s';
 
 const {Edit, Delete} = Cog.factory;
@@ -20,9 +20,9 @@ const namespaceSelectorLinks = ({spec}) => {
 const serviceSelectorLinks = ({spec}) => {
   const namespaces = _.get(spec, 'namespaceSelector.matchNames', []);
   if (namespaces.length) {
-    return _.map(namespaces, n => <span key={n}><Selector selector={spec.selector} kind="Service" namespace={n} />&nbsp;&nbsp;</span>);
+    return _.map(namespaces, n => <span key={n}><Selector selector={spec.selector} kind={referenceForModel(ServiceModel)} namespace={n} />&nbsp;&nbsp;</span>);
   }
-  return <Selector selector={spec.selector} kind="Service" />;
+  return <Selector selector={spec.selector} kind={referenceForModel(ServiceModel)} />;
 };
 
 const ServiceMonitorRow = ({obj: sm}) => {

@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { ColHead, List, ListHeader, ListPage, ResourceRow } from './factory';
 import { Cog, LabelList, ResourceCog, ResourceLink, Selector } from './utils';
-import { PrometheusModel } from '../models';
+import { PrometheusModel, ServiceMonitorModel } from '../models';
 import { referenceForModel } from '../module/k8s';
 
 const {Edit, Delete, ModifyCount} = Cog.factory;
@@ -24,7 +24,7 @@ const PrometheusRow = ({obj: instance}) => {
     </div>
     <div className="col-lg-1 col-md-2 hidden-sm hidden-xs">{spec.version}</div>
     <div className="col-lg-2 hidden-md hidden-sm hidden-xs">
-      <Selector selector={spec.serviceMonitorSelector} kind="ServiceMonitor" namespace={metadata.namespace} />
+      <Selector selector={spec.serviceMonitorSelector} kind={referenceForModel(ServiceMonitorModel)} namespace={metadata.namespace} />
     </div>
   </ResourceRow>;
 };
