@@ -19,6 +19,7 @@ const lastKind = new Set();
  * @deprecated: Use `modelFor` or `connectToModel`.
  * Provides a synchronous way to acquire a statically-defined Kubernetes model.
  * NOTE: This will not work for CRDs defined at runtime, use `connectToModels` instead.
+ * @type {(kind: string) => K8sKind}
  */
 export const kindObj = (kind) => {
   if (kindForReference(kind) === kind && !lastKind.has(kind)) {

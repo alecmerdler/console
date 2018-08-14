@@ -123,9 +123,10 @@ export class Cog extends DropdownMixin {
 
 export type CogOption = {
   label: string;
-  href?: string, callback?: () => any;
+  href?: string, 
+  callback?: () => any;
 };
-export type CogAction = (kind, obj: K8sResourceKind) => CogOption;
+export type CogAction = (kind: K8sKind, obj: K8sResourceKind) => CogOption;
 
 export type ResourceCogProps = {
   kindObj: K8sKind;

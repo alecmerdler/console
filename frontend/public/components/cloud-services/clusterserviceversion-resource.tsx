@@ -5,16 +5,17 @@ import { Link, match } from 'react-router-dom';
 import * as _ from 'lodash-es';
 import { connect } from 'react-redux';
 
-import { ClusterServiceVersionResourceKind, ALMStatusDescriptors, ClusterServiceVersionKind, referenceForCRDDesc, ClusterServiceVersionPhase } from './index';
+import { ClusterServiceVersionResourceKind, ALMStatusDescriptors, ClusterServiceVersionKind, referenceForCRDDesc, ClusterServiceVersionPhase, ALMActionDescriptors, ActionDescriptor } from './index';
 import { Resources } from './k8s-resource';
 import { StatusDescriptor, PodStatusChart, ClusterServiceVersionResourceStatus } from './status-descriptors';
 import { ClusterServiceVersionResourceSpec, SpecDescriptor } from './spec-descriptors';
 import { List, MultiListPage, ListHeader, ColHead, DetailsPage, CompactExpandButtons } from '../factory';
-import { ResourceLink, ResourceSummary, StatusBox, navFactory, Timestamp, LabelList, humanizeNumber, ResourceIcon, MsgBox, ResourceCog, Cog } from '../utils';
+import { ResourceLink, ResourceSummary, StatusBox, navFactory, Timestamp, LabelList, humanizeNumber, ResourceIcon, MsgBox, ResourceCog, Cog, CogAction } from '../utils';
 import { connectToModel } from '../../kinds';
-import { kindForReference, K8sResourceKind, OwnerReference, K8sKind, referenceFor, GroupVersionKind, referenceForModel } from '../../module/k8s';
+import { kindForReference, K8sResourceKind, OwnerReference, K8sKind, referenceFor, GroupVersionKind, referenceForModel, k8sPatch } from '../../module/k8s';
 import { ClusterServiceVersionModel } from '../../models';
 import { Gauge, Scalar, Line, Bar } from '../graphs';
+import { actionDescriptorUpdateModal } from '../modals/action-descriptor-modal';
 
 export const ClusterServiceVersionResourceHeader: React.SFC<ClusterServiceVersionResourceHeaderProps> = (props) => <ListHeader>
   <ColHead {...props} className="col-xs-2" sortField="metadata.name">Name</ColHead>
@@ -36,12 +37,28 @@ export const ClusterServiceVersionResourceLink: React.SFC<ClusterServiceVersionR
   </span>;
 };
 
-export const ClusterServiceVersionResourceRow: React.SFC<ClusterServiceVersionResourceRowProps> = (props) => {
-  const {obj} = props;
+const stateToProps = ({k8s}, {obj}) => ({model: k8s.getIn(['RESOURCES', 'models', referenceFor(obj)])});
+
+export const ClusterServiceVersionResourceRow = connect(stateToProps)((props: ClusterServiceVersionResourceRowProps) => {
+  const {obj, csv, model} = props;
+
+  type ActionFor = (ad: ActionDescriptor) => CogAction;
+  const actionFor: ActionFor = ad => (kind, obj) => ({
+    label: ad.displayName,
+    callback: () => ad['x-descriptors'].indexOf(ALMActionDescriptors.update) > -1 && actionDescriptorUpdateModal({obj, actionDescriptor: ad, k8sPatch, model})
+      || ad['x-descriptors'].indexOf(ALMActionDescriptors.link) > -1 && window.open(ad.value, '_blank'),
+  });
+
+  const actionDescriptors = (_.get(csv, 'spec.customresourcedefinitions.owned', [])
+    .find((desc) => referenceForCRDDesc(desc) === referenceFor(obj))
+    .actionDescriptors || []).map(ad => actionFor(ad));
+    
+  const actions = [...Cog.factory.common, ...actionDescriptors];
 
   return <div className="row co-resource-list__item">
     <div className="col-xs-2 co-resource-link-wrapper">
-      <ResourceCog actions={Cog.factory.common} kind={referenceFor(obj)} resource={obj} />
+      {/* TODO(alecmerdler): Get actions from `actionDescriptors` on `ClusterServiceVersion` */}
+      <ResourceCog actions={actions} kind={referenceFor(obj)} resource={obj} />
       <ClusterServiceVersionResourceLink obj={obj} />
     </div>
     <div className="col-xs-2">
@@ -60,12 +77,12 @@ export const ClusterServiceVersionResourceRow: React.SFC<ClusterServiceVersionRe
       <Timestamp timestamp={obj.metadata.creationTimestamp} />
     </div>
   </div>;
-};
+});
 
 export const ClusterServiceVersionResourceList: React.SFC<ClusterServiceVersionResourceListProps> = (props) => {
   const EmptyMsg = () => <MsgBox title="No Application Resources Found" detail="Application resources are declarative components used to define the behavior of the application." />;
 
-  return <List {...props} EmptyMsg={EmptyMsg} Header={ClusterServiceVersionResourceHeader} Row={ClusterServiceVersionResourceRow} label="Application Resources" />;
+  return <List {...props} EmptyMsg={EmptyMsg} Header={ClusterServiceVersionResourceHeader} Row={(rowProps) => <ClusterServiceVersionResourceRow {...rowProps} csv={props.csv} />} label="Application Resources" />;
 };
 
 export const ClusterServiceVersionPrometheusGraph: React.SFC<ClusterServiceVersionPrometheusGraphProps> = (props) => {
@@ -115,7 +132,8 @@ export const ClusterServiceVersionResourcesPage = connect(inFlightStateToProps)(
     return firehoseResources.length > 0
       ? <MultiListPage
         {...props}
-        ListComponent={ClusterServiceVersionResourceList}
+        // TODO(alecmerdler): Pass `props.obj` to list
+        ListComponent={(listProps) => <ClusterServiceVersionResourceList {...listProps} csv={obj} />}
         filterLabel="Resources by name"
         resources={firehoseResources}
         namespace={obj.metadata.namespace}
@@ -227,6 +245,7 @@ export const ClusterServiceVersionResourcesDetailsPage: React.SFC<ClusterService
   resources={[
     {kind: referenceForModel(ClusterServiceVersionModel), name: props.match.params.appName, namespace: props.namespace, isList: false, prop: 'csv'},
   ]}
+  // TODO(alecmerdler): Get actions from `actionDescriptors` on `ClusterServiceVersion`
   menuActions={Cog.factory.common}
   breadcrumbsFor={() => [
     {name: props.match.params.appName, path: `${props.match.url.split('/').filter((v, i) => i <= props.match.path.split('/').indexOf(':appName')).join('/')}/instances`},
@@ -248,6 +267,7 @@ export type ClusterServiceVersionResourceListProps = {
   reduxIDs?: string[];
   rowSplitter?: any;
   staticFilters?: any;
+  csv: ClusterServiceVersionKind;
 };
 
 export type ClusterServiceVersionResourceHeaderProps = {
@@ -256,6 +276,8 @@ export type ClusterServiceVersionResourceHeaderProps = {
 
 export type ClusterServiceVersionResourceRowProps = {
   obj: ClusterServiceVersionResourceKind;
+  model: K8sKind;
+  csv: ClusterServiceVersionKind;
 };
 
 export type ClusterServiceVersionResourcesPageProps = {

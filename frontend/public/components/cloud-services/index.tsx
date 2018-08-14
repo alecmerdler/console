@@ -51,6 +51,11 @@ export enum ALMStatusDescriptors {
   k8sResourcePrefix = 'urn:alm:descriptor:io.kubernetes:',
 }
 
+export enum ALMActionDescriptors {
+  update = 'urn:alm:action-descriptor:update',
+  link = 'urn:alm:action-descriptor:link',
+}
+
 export enum ClusterServiceVersionPhase {
   CSVPhaseNone = '',
   CSVPhasePending = 'Pending',
@@ -111,6 +116,8 @@ export type ClusterServiceVersionKind = {
 export type ClusterServiceVersionResourceKind = {
 
 } & K8sResourceKind;
+
+export type ActionDescriptor = StatusDescriptor;
 
 export type StepResource = {
   group: string;
