@@ -375,6 +375,7 @@ export class Nav extends React.Component {
             <ResourceNSLink resource="events" name="Events" onClick={this.close} />
           </NavSection>
 
+          {/* TODO(alecmerdler): Hide links that are restricted by RBAC */}
           <NavSection required={FLAGS.CLOUD_SERVICES} text="Operators" img={operatorImg} activeImg={operatorActiveImg} >
             <ResourceNSLink model={ClusterServiceVersionModel} resource={ClusterServiceVersionModel.plural} name="Cluster Service Versions" onClick={this.close} />
             <Sep />
