@@ -7,6 +7,7 @@ import { safeLoad } from 'js-yaml';
 
 import { SectionHeading, Firehose, MsgBox, LoadingBox, ResourceCog, ResourceLink, Cog, navFactory, resourceObjPath, Timestamp, StatusBox } from '../utils';
 import { withFallback } from '../utils/error-boundary';
+import { withNamespace } from '../utils/with-namespace';
 import { CreateYAML } from '../create-yaml';
 import { ClusterServiceVersionLogo, CatalogSourceKind, ClusterServiceVersionKind, Package, SubscriptionKind, olmNamespace } from './index';
 import { SubscriptionModel, CatalogSourceModel, ConfigMapModel } from '../../models';
@@ -154,9 +155,11 @@ export const CatalogSourceList = withFallback((props: CatalogSourceListProps) =>
     : <StatusBox loaded={props.loaded} loadError={props.loadError} label={CatalogSourceModel.labelPlural} />;
 }, () => <MsgBox title="Error Parsing Catalog" detail="The contents of the catalog source could not be retrieved." />);
 
-export const CatalogSourcesPage: React.SFC<CatalogSourcePageProps> = (props) => {
+export const CatalogSourcesPage = withNamespace<CatalogSourcePageProps>((props) => {
   type Flatten = (resources: {[kind: string]: {data: K8sResourceKind[]}}) => K8sResourceKind[];
   const flatten: Flatten = resources => _.get(resources.catalogSource, 'data', []);
+
+  const olmNS = _.get(props.namespaceObj, 'data.annotations.alm-manager', `${olmNamespace}.olm-operator`).split('.')[0];
 
   return <MultiListPage
     {...props}
@@ -168,12 +171,11 @@ export const CatalogSourcesPage: React.SFC<CatalogSourcePageProps> = (props) => 
     resources={[
       {kind: referenceForModel(CatalogSourceModel), isList: true, namespaced: true, prop: 'catalogSource'},
       {kind: ConfigMapModel.kind, isList: true, namespaced: true, prop: 'configMap'},
-      // FIXME(alecmerdler): Don't hard-code catalog namespace, use the `alm-manager` annotation on the current namespace
-      ...((props.namespace || olmNamespace) !== olmNamespace ? {kind: referenceForModel(CatalogSourceModel), isList: true, namespace: olmNamespace, prop: 'globalCatalogSource'} : []),
-      ...((props.namespace || olmNamespace) !== olmNamespace ? {kind: ConfigMapModel.kind, isList: true, namespace: olmNamespace, prop: 'globalConfigMap'} : []),
+      ...((props.namespace || olmNS) !== olmNS ? {kind: referenceForModel(CatalogSourceModel), isList: true, namespace: olmNS, prop: 'globalCatalogSource'} : []),
+      ...((props.namespace || olmNS) !== olmNS ? {kind: ConfigMapModel.kind, isList: true, namespace: olmNS, prop: 'globalConfigMap'} : []),
       {kind: referenceForModel(SubscriptionModel), isList: true, namespaced: true, prop: 'subscription'},
     ]} />;
-};
+});
 
 export const CatalogSourceDetailsPage: React.SFC<CatalogSourceDetailsPageProps> = (props) => <DetailsPage
   {...props}
@@ -276,6 +278,7 @@ export type CatalogSourceListProps = {
 
 export type CatalogSourcePageProps = {
   namespace?: string;
+  namespaceObj: {loaded: boolean, data: K8sResourceKind};
 };
 
 export type CatalogSourceDetailsProps = {
