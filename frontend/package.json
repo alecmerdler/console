@@ -71,7 +71,7 @@
     "patternfly-react-extensions": "2.5.0",
     "plotly.js": "1.28.x",
     "prop-types": "15.6.x",
-    "react": "16.x",
+    "react": "16.5.x",
     "react-copy-to-clipboard": "5.x",
     "react-dnd": "^2.6.0",
     "react-dnd-html5-backend": "^2.6.0",
