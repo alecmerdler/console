@@ -3,6 +3,7 @@
 import { browser, $, ExpectedConditions as until } from 'protractor';
 
 import { appHost, checkLogs, checkErrors, testName } from '../../protractor.conf';
+import * as catalogPageView from '../../views/catalog-page.view';
 import * as marketplaceView from '../../views/kubernetes-marketplace.view';
 import * as sidenavView from '../../views/sidenav.view';
 
@@ -24,67 +25,67 @@ describe('Viewing the operators in Kubernetes Marketplace', () => {
     await marketplaceView.isLoaded();
 
     openCloudServices.forEach(name => {
-      expect(marketplaceView.entryTileFor(name).isDisplayed()).toBe(true);
+      expect(catalogPageView.catalogTileFor(name).isDisplayed()).toBe(true);
     });
   });
 
   it('displays etcd operator when filter "CoreOS, Inc" is active', async() => {
-    await marketplaceView.clickFilterCheckbox('CoreOS');
+    await catalogPageView.clickFilterCheckbox('CoreOS');
 
-    expect(marketplaceView.entryTileFor('etcd').isDisplayed()).toBe(true);
+    expect(catalogPageView.catalogTileFor('etcd').isDisplayed()).toBe(true);
 
     // Cleanup
-    await marketplaceView.clickFilterCheckbox('CoreOS');
+    await catalogPageView.clickFilterCheckbox('CoreOS');
   });
 
   it('does not display etcd operator when filter "Red Hat, Inc." is active', async() => {
-    await marketplaceView.clickFilterCheckbox('Red Hat');
+    await catalogPageView.clickFilterCheckbox('Red Hat');
 
-    expect(marketplaceView.entryTileCount('etcd')).toBe(0);
+    expect(catalogPageView.catalogTileCount('etcd')).toBe(0);
 
     // Cleanup
-    await marketplaceView.clickFilterCheckbox('Red Hat');
+    await catalogPageView.clickFilterCheckbox('Red Hat');
   });
 
   it('displays "prometheus" as an operator when using the filter "p"', async() => {
-    await marketplaceView.filterByName('p');
+    await catalogPageView.filterByName('p');
 
-    expect(marketplaceView.entryTileFor('prometheus').isDisplayed()).toBe(true);
+    expect(catalogPageView.catalogTileFor('prometheus').isDisplayed()).toBe(true);
 
     // Cleanup
-    await marketplaceView.filterByName('');
+    await catalogPageView.filterByName('');
   });
 
-  it('displays "Clear All Filters" when filters have no results', async() => {
-    await marketplaceView.filterByName('NoOperatorsTest');
+  it('displays "Clear All Filters" text when filters remove all operators from display', async() => {
+    await catalogPageView.filterByName('NoOperatorsTest');
 
-    expect(marketplaceView.entryTiles.count()).toBe(0);
-    expect(marketplaceView.clearFiltersText.isDisplayed()).toBe(true);
+    expect(catalogPageView.catalogTiles.count()).toBe(0);
+    expect(catalogPageView.clearFiltersText.isDisplayed()).toBe(true);
   });
 
   it('clears all filters when "Clear All Filters" text is clicked', async() => {
-    await marketplaceView.clearFiltersText.click();
+    await catalogPageView.clearFiltersText.click();
 
-    expect(marketplaceView.filterTextbox.getAttribute('value')).toEqual('');
-    expect(marketplaceView.activeFilterCheckboxes.count()).toBe(0);
+    expect(catalogPageView.filterTextbox.getAttribute('value')).toEqual('');
+    expect(catalogPageView.activeFilterCheckboxes.count()).toBe(0);
 
     // All tiles should be displayed
     openCloudServices.forEach(name => {
-      expect(marketplaceView.entryTileFor(name).isDisplayed()).toBe(true);
+      expect(catalogPageView.catalogTileFor(name).isDisplayed()).toBe(true);
     });
   });
 
   // Test MarketplaceModalOverlay for each operator
   openCloudServices.forEach(name => {
-    it('displays modal overlay with correct content when ' + name + ' operator is clicked', async() => {
-        marketplaceView.entryTileFor(name).click();
-        await marketplaceView.operatorModalIsLoaded();
+    it(`displays MarketplaceModalOverlay with correct content when ${name} operator is clicked`, async() => {
+      catalogPageView.catalogTileFor(name).click();
+      await marketplaceView.operatorModalIsLoaded();
 
-        expect(marketplaceView.operatorModal.isDisplayed()).toBe(true);
-        expect(marketplaceView.operatorModalTitle.getText()).toEqual(name);
+      expect(marketplaceView.operatorModal.isDisplayed()).toBe(true);
+      expect(marketplaceView.operatorModalTitle.getText()).toEqual(name);
 
-        await marketplaceView.closeOperatorModal();
-        await marketplaceView.operatorModalIsClosed();
+      await marketplaceView.closeOperatorModal();
+      await marketplaceView.operatorModalIsClosed();
     });
   });
 
