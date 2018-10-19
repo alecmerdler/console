@@ -57,7 +57,7 @@ const getItems = (props) => {
   return _.sortBy([...packageManifestItems], 'name');
 };
 
-class MarketplaceListPage extends React.Component {
+export class MarketplaceListPage extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -71,6 +71,7 @@ class MarketplaceListPage extends React.Component {
       const items = getItems(props);
       return {items, packagemanifests};
     }
+    return {};
   }
 
   openOverlay(item) {

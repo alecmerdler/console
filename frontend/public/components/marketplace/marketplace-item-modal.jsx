@@ -1,9 +1,9 @@
 import * as React from 'react';
-import PropTypes from 'prop-types';
-import {Button} from 'patternfly-react/dist/esm/components/Button';
-import {Modal} from 'patternfly-react/dist/esm/components/Modal';
-import {CatalogItemHeader} from 'patternfly-react-extensions/dist/esm/components/CatalogItemHeader';
-import {PropertiesSidePanel, PropertyItem} from 'patternfly-react-extensions/dist/esm/components/PropertiesSidePanel';
+import * as PropTypes from 'prop-types';
+import {Button} from 'patternfly-react/dist/js/components/Button';
+import {Modal} from 'patternfly-react/dist/js/components/Modal';
+import {CatalogItemHeader} from 'patternfly-react-extensions/dist/js/components/CatalogItemHeader';
+import {PropertiesSidePanel, PropertyItem} from 'patternfly-react-extensions/dist/js/components/PropertiesSidePanel';
 
 const MarketplaceItemModal = (props) => {
   const { item, close /* openSubscribe */ } = props;
@@ -46,6 +46,7 @@ const MarketplaceItemModal = (props) => {
     </Modal>
   );
 };
+
 MarketplaceItemModal.propTypes = {
   size: PropTypes.string,
 };

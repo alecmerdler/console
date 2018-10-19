@@ -1,11 +1,11 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
 import * as PropTypes from 'prop-types';
-import {CatalogTileView} from 'patternfly-react-extensions/dist/esm/components/CatalogTileView';
-import {CatalogTile} from 'patternfly-react-extensions/dist/esm/components/CatalogTile';
-import {FilterSidePanel} from 'patternfly-react-extensions/dist/esm/components/FilterSidePanel';
-import {EmptyState} from 'patternfly-react/dist/esm/components/EmptyState';
-import FormControl from 'patternfly-react/dist/esm/components/Form/FormControl';
+import {CatalogTileView} from 'patternfly-react-extensions/dist/js/components/CatalogTileView';
+import {CatalogTile} from 'patternfly-react-extensions/dist/js/components/CatalogTile';
+import {FilterSidePanel} from 'patternfly-react-extensions/dist/js/components/FilterSidePanel';
+import {EmptyState} from 'patternfly-react/dist/js/components/EmptyState';
+import FormControl from 'patternfly-react/dist/js/components/Form/FormControl';
 
 import {normalizeIconClass} from '../catalog/catalog-item-icon';
 
@@ -55,7 +55,7 @@ const filterGroups = [
   'provider',
 ];
 
-export class MarketplaceTileViewPage extends React.Component {
+class MarketplaceTileViewPage extends React.Component {
   constructor(props) {
     super(props);
     const {items} = this.props;
@@ -287,3 +287,5 @@ MarketplaceTileViewPage.displayName = 'MarketplaceTileViewPage';
 MarketplaceTileViewPage.propTypes = {
   items: PropTypes.array,
 };
+
+export {MarketplaceTileViewPage};
