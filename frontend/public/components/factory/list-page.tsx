@@ -1,3 +1,5 @@
+/* eslint-disable no-undef, no-unused-vars */
+
 import * as _ from 'lodash-es';
 import * as classNames from 'classnames';
 import * as PropTypes from 'prop-types';
@@ -19,8 +21,9 @@ import {
   kindObj,
   PageHeading
 } from '../utils';
+import { ListInnerProps } from './list';
 
-export const CompactExpandButtons = ({expand = false, onExpandChange = _.noop}) => <div className="btn-group btn-group-sm" data-toggle="buttons">
+export const CompactExpandButtons: React.SFC<CompactExpandButtonsProps> = ({expand = false, onExpandChange = _.noop}) => <div className="btn-group btn-group-sm" data-toggle="buttons">
   <label className={classNames('btn compaction-btn', expand ? 'btn-default' : 'btn-primary')}>
     <input type="radio" onClick={() => onExpandChange(false)} /> Compact
   </label>
@@ -29,8 +32,7 @@ export const CompactExpandButtons = ({expand = false, onExpandChange = _.noop}) 
   </label>
 </div>;
 
-/** @type {React.SFC<{autoFocus?: boolean, disabled?: boolean, label: string, onChange: React.ChangeEventHandler<any>, defaultValue: string}}>} */
-export const TextFilter = ({label, onChange, defaultValue, style, className, autoFocus}) => {
+export const TextFilter: React.SFC<TextFilterProps> = ({label, onChange, defaultValue, style, className, autoFocus}) => {
   if (_.isUndefined(autoFocus)) {
     if (window.matchMedia('(min-width: 800px)').matches) {
       autoFocus = true;
@@ -55,9 +57,8 @@ export const TextFilter = ({label, onChange, defaultValue, style, className, aut
 
 TextFilter.displayName = 'TextFilter';
 
-// TODO (jon) make this into "withListPageFilters" HOC
-/** @augments {React.PureComponent<{ListComponent: React.ComponentType<any>, kinds: string[], flatten?: function, data?: any[], rowFilters?: any[]}>} */
-export class ListPageWrapper_ extends React.PureComponent {
+// TODO (alecmerdler): Make this into "withListPageFilters" HOC
+export class ListPageWrapper_ extends React.PureComponent<WithListPageFiltersProps> {
   render () {
     const {
       flatten,
@@ -94,7 +95,6 @@ export class ListPageWrapper_ extends React.PureComponent {
   }
 }
 
-ListPageWrapper_.displayName = 'ListPageWrapper_';
 ListPageWrapper_.propTypes = {
   data: PropTypes.array,
   kinds: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.object])).isRequired,
@@ -104,7 +104,7 @@ ListPageWrapper_.propTypes = {
 };
 
 export const FireMan_ = connect(null, {filterList: k8sActions.filterList})(
-  class ConnectedFireMan extends React.PureComponent {
+  class ConnectedFireMan extends React.PureComponent<ConnectedFireManProps> {
     constructor (props) {
       super(props);
       this.onExpandChange = this.onExpandChange.bind(this);
@@ -140,7 +140,7 @@ export const FireMan_ = connect(null, {filterList: k8sActions.filterList})(
       } else {
         params.delete(filterName);
       }
-      const url = new URL(window.location);
+      const url = new URL(window.location.toString());
       history.replace(`${url.pathname}?${params.toString()}${url.hash}`);
     }
 
@@ -268,8 +268,7 @@ FireMan_.propTypes = {
   title: PropTypes.string,
 };
 
-/** @type {React.SFC<{ListComponent: React.ComponentType<any>, kind: string, helpText?: any, namespace?: string, filterLabel?: string, textFilter?: string, title?: string, showTitle?: boolean, dropdownFilters?: any[], rowFilters?: any[], selector?: any, fieldSelector?: string, canCreate?: boolean, createButtonText?: string, createProps?: any, mock?: boolean}>} */
-export const ListPage = props => {
+export const ListPage: React.SFC<ListPageProps> = props => {
   const {
     autoFocus,
     canCreate,
@@ -351,8 +350,7 @@ export const ListPage = props => {
 
 ListPage.displayName = 'ListPage';
 
-/** @type {React.SFC<{canCreate?: boolean, createButtonText?: string, createProps?: any, flatten?: Function, title?: string, showTitle?: boolean, helpText?: any, dropdownFilters?: any[], filterLabel?: string, rowFilters?: any[], resources: any[], ListComponent: React.ComponentType<any>, namespace?: string}>} */
-export const MultiListPage = props => {
+export const MultiListPage: React.SFC<MultiListPageProps> = props => {
   const {
     autoFocus,
     canCreate,
@@ -408,6 +406,67 @@ export const MultiListPage = props => {
       />
     </Firehose>
   </FireMan_>;
+};
+
+export type CompactExpandButtonsProps = {
+  expand: boolean;
+  onExpandChange?: (val: boolean) => void;
+};
+
+export type TextFilterProps = {
+  autoFocus?: boolean;
+  disabled?: boolean;
+  label: string;
+  onChange: React.ChangeEventHandler<any>;
+  defaultValue: string;
+} & React.HTMLAttributes<any>;
+
+export type WithListPageFiltersProps = {
+  ListComponent: React.ComponentType<ListInnerProps>; 
+  kinds: string[]; 
+  flatten?: Function; 
+  data?: any[]; 
+  rowFilters?: any[];
+};
+
+export type ConnectedFireManProps = {
+
+};
+
+export type ListPageProps = {
+  ListComponent: React.ComponentType<ListInnerProps>;
+  kind: string;
+  helpText?: any;
+  namespace?: string;
+  filterLabel?: string;
+  textFilter?: string;
+  title?: string;
+  showTitle?: boolean;
+  dropdownFilters?: any[];
+  rowFilters?: any[];
+  selector?: any;
+  fieldSelector?: string;
+  canCreate?: boolean;
+  createButtonText?: string;
+  createProps?: any;
+  mock?: boolean;
+};
+
+export type MultiListPageProps = {
+  autoFocus?: boolean;
+  canCreate?: boolean;
+  createButtonText?: string;
+  createProps?: any;
+  flatten?: Function;
+  title?: string;
+  showTitle?: boolean;
+  helpText?: any;
+  dropdownFilters?: any[];
+  filterLabel?: string;
+  rowFilters?: any[];
+  resources: any[];
+  ListComponent: React.ComponentType<ListInnerProps>;
+  namespace?: string;
 };
 
 MultiListPage.displayName = 'MultiListPage';
