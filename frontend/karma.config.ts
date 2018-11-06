@@ -1,17 +1,25 @@
-// FIXME(alecmerdler): Use ES6 `import`
-const webpackConfig = require('./webpack.config');
+import webpackConfig from './webpack.config';
 
-const config = (config) => {
+export default (config) => {
   config.set({
     basePath: '',
     frameworks: ['jasmine'],
     files: [
-      '__tests__/**/*.js',
-      '__tests__/**/*.ts',
+      // '__tests__/**/*.js',
+      // '__tests__/**/*.ts',
+
+      // '__tests__/index.ts',
+      // FIXME(alecmerdler): Just trying to get a test to run...
+      '__tests__/units.js',
+    ],
+    exclude: [
+      // FIXME: Is this right?
+      '**/*.(png|jpg|jpeg|gif|svg|woff2?|ttf|eot|otf)',
     ],
     preprocessors: {
-      '__tests__/**/*.js': ['webpack'],
-      '__tests__/**/*.ts': ['webpack'],
+      '__tests__/**/*.js': ['webpack', 'sourcemap'],
+      '__tests__/**/*.ts': ['webpack', 'sourcemap'],
+      '__tests/index.ts': ['webpack', 'sourcemap'],
     },
     webpack: webpackConfig,
     reporters: ['dots', 'coverage'],
@@ -40,6 +48,3 @@ const config = (config) => {
     },
   });
 };
-
-// FIXME(alecmerdler): Use ES6 `export`
-module.exports = config;
