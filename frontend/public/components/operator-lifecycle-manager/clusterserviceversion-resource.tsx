@@ -150,6 +150,7 @@ export const ClusterServiceVersionResourceDetails = connectToModel(
       };
 
       const blockValue = (descriptor: Descriptor, block: {[key: string]: any}) => !_.isEmpty(descriptor)
+        // FIXME(alecmerdler): Use JSONPath for accessing values
         ? _.get(block, descriptor.path, descriptor.value)
         : undefined;
 
