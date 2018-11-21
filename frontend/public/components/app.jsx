@@ -87,6 +87,7 @@ const DefaultPage = connectToFlags(FLAGS.OPENSHIFT)(({ flags }) => {
   return <Redirect to={statusPage} />;
 });
 
+// FIXME(alecmerdler): Entire component unmounts when URL query params change, should wrap `props.loader` to ensure it is memoized...
 const LazyRoute = (props) => <Route {...props} component={(componentProps) => <AsyncComponent loader={props.loader} kind={props.kind} {...componentProps} />} />;
 
 class App extends React.PureComponent {
@@ -113,6 +114,7 @@ class App extends React.PureComponent {
       });
 
     const renderCatalogRoute = (path) => {
+      // FIXME(alecmerdler): WTF is this...
       if (this.CatalogPage) {
         return <Route path={path} exact component={this.CatalogPage} />;
       }
@@ -134,8 +136,9 @@ class App extends React.PureComponent {
             <LazyRoute path="/overview/ns/:ns" exact loader={() => import('./overview' /* webpackChunkName: "overview" */).then(m => m.OverviewPage)} />
             <Route path="/overview" exact component={NamespaceRedirect} />
 
-            {renderCatalogRoute('/catalog/all-namespaces')}
-            {renderCatalogRoute('/catalog/ns/:ns')}
+            {/* FIXME(alecmerdler): WTF is this. Yeah no fuck you special snowflake... */}
+            {/* {renderCatalogRoute('/catalog/all-namespaces')} */}
+            {/* {renderCatalogRoute('/catalog/ns/:ns')} */}
             <Route path="/catalog" exact component={NamespaceRedirect} />
 
             <LazyRoute path="/status/all-namespaces" exact loader={() => import('./cluster-overview' /* webpackChunkName: "cluster-overview" */).then(m => m.ClusterOverviewPage)} />
@@ -149,6 +152,8 @@ class App extends React.PureComponent {
 
             <LazyRoute path={`/k8s/ns/:ns/${SubscriptionModel.plural}/new`} exact loader={() => import('./operator-lifecycle-manager').then(m => NamespaceFromURL(m.CreateSubscriptionYAML))} />
 
+            <LazyRoute path="/catalog/all-namespaces" loader={() => import('./catalog/catalog-page' /* webpackChunkName */).then(m => m.CatalogPage)} />
+            <LazyRoute path="/catalog/ns/:ns" loader={() => import('./catalog/catalog-page' /* webpackChunkName */).then(m => m.CatalogPage)} />
             <LazyRoute path="/catalog/create-service-instance" exact loader={() => import('./service-catalog/create-instance').then(m => m.CreateInstancePage)} />
             <LazyRoute path="/k8s/ns/:ns/serviceinstances/:name/create-binding" exact loader={() => import('./service-catalog/create-binding').then(m => m.CreateBindingPage)} />
             <LazyRoute path="/catalog/source-to-image" exact loader={() => import('./source-to-image').then(m => m.SourceToImagePage)} />
