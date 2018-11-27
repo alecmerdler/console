@@ -1,9 +1,10 @@
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import {Button} from 'patternfly-react/dist/js/components/Button';
-import {Modal} from 'patternfly-react/dist/js/components/Modal';
-import {CatalogItemHeader} from 'patternfly-react-extensions/dist/js/components/CatalogItemHeader';
-import {PropertiesSidePanel, PropertyItem} from 'patternfly-react-extensions/dist/js/components/PropertiesSidePanel';
+
+import {Button} from 'patternfly-react';
+import {Modal} from 'patternfly-react';
+import {CatalogItemHeader} from 'patternfly-react-extensions';
+import {PropertiesSidePanel, PropertyItem} from 'patternfly-react-extensions';
 
 const MarketplaceItemModal = (props) => {
   const { item, close /* openSubscribe */ } = props;

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { mount } from 'enzyme';
 
-import {CatalogTile} from '../../../node_modules/patternfly-react-extensions/dist/js/components/CatalogTile';
-import {FilterSidePanel} from '../../../node_modules/patternfly-react-extensions/dist/js/components/FilterSidePanel';
+import {CatalogTile} from 'patternfly-react-extensions';
+import {FilterSidePanel} from 'patternfly-react-extensions';
 
 import { MarketplaceItemModal } from '../../../public/components/marketplace/marketplace-item-modal';
 import { MarketplaceListPage } from '../../../public/components/marketplace/kubernetes-marketplace';
