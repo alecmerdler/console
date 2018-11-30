@@ -72,6 +72,11 @@ const loadList = (oldList, resources) => {
   });
 };
 
+// TODO(alecmerdler): Define Redux store type for `k8s`
+export type K8sState = {
+
+};
+
 export default (state: ImmutableMap<string, any>, action) => {
   if (!state) {
     return fromJS({RESOURCES: {inFlight: false, models: ImmutableMap<string, K8sKind>()}});

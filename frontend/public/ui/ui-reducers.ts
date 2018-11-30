@@ -1,3 +1,5 @@
+/* eslint-disable no-undef, no-unused-vars */
+
 import * as _ from 'lodash-es';
 import { Map as ImmutableMap } from 'immutable';
 
@@ -6,7 +8,34 @@ import { ALL_NAMESPACES_KEY, LAST_NAMESPACE_NAME_LOCAL_STORAGE_KEY, NAMESPACE_LO
 import { AlertStates, isSilenced } from '../monitoring';
 import { legalNamePattern, getNamespace } from '../components/utils/link';
 
-export default (state, action) => {
+export type UIStateData = {
+  activeNamespace: string;
+  activeNavSectionId: string;
+  createProjectMessage: string;
+  location: string;
+  impersonate: {
+    kind: string;
+    name: string;
+    subprotocols: any;
+  };
+  overview: {
+    metrics: any;
+    resources: any;
+    selectedDetailsTab: string;
+    selectedUID: string;
+    selectedView: string;
+  };
+};
+
+export interface UIState extends ImmutableMap<string, any> {
+  toJS(): UIStateData;
+  get<K extends keyof UIStateData>(key: K, notSetValue?: UIStateData[K]): UIStateData[K];
+  // TODO(alecmerdler): Define `getIn()` (is that even possible with deep nesting...?)
+  set<K extends keyof UIStateData>(key: K, val: UIStateData[K]): this;
+  // TODO(alecmerdler): Define `setIn()` (is that even possible with deep nesting...?)
+}
+
+export default (state: UIState, action): UIState => {
   if (!state) {
     const { pathname } = window.location;
 
@@ -20,15 +49,14 @@ export default (state, action) => {
       }
     }
 
-
     return ImmutableMap({
       activeNavSectionId: 'workloads',
       location: pathname,
       activeNamespace: activeNamespace || 'default',
       createProjectMessage: '',
-      overview: new ImmutableMap({
+      overview: ImmutableMap({
         metrics: {},
-        resources: new ImmutableMap({}),
+        resources: ImmutableMap({}),
         selectedDetailsTab: '',
         selectedUID: '',
         selectedView: 'resources',
@@ -112,7 +140,7 @@ export default (state, action) => {
       return state.setIn(['overview', 'metrics'], action.metrics);
 
     case types.updateOverviewResources: {
-      const newResources = new ImmutableMap(_.keyBy(action.resources, 'obj.metadata.uid'));
+      const newResources = ImmutableMap(_.keyBy(action.resources, 'obj.metadata.uid'));
       return state.setIn(['overview', 'resources'], newResources);
     }
 

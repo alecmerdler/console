@@ -26,16 +26,28 @@ export enum MonitoringRoutes {
 const SET_MONITORING_URL = 'setMonitoringURL';
 const DEFAULTS = _.mapValues(MonitoringRoutes, undefined);
 
-export const setMonitoringURL = (name, url) => ({name, url, type: SET_MONITORING_URL});
+export const setMonitoringURL = (name: string, url: string) => ({name, url, type: SET_MONITORING_URL});
 
-export const monitoringReducer = (state: ImmutableMap<string, any>, action) => {
+export type MonitoringStateData = {
+  [x in MonitoringRoutes]: string;
+};
+
+export interface MonitoringState extends ImmutableMap<string, any> {
+  toJS(): MonitoringStateData;
+  get<K extends keyof MonitoringStateData>(key: K, notSetValue?: MonitoringStateData[K]): MonitoringStateData[K];
+  // TODO(alecmerdler): Define `getIn()` (is that even possible with deep nesting...?)
+  set<K extends keyof MonitoringStateData>(key: K, val: MonitoringStateData[K]): this;
+  // TODO(alecmerdler): Define `setIn()` (is that even possible with deep nesting...?)
+}
+
+export const monitoringReducer = (state: MonitoringState, action): MonitoringState => {
   if (!state) {
-    return ImmutableMap(DEFAULTS);
+    return ImmutableMap<MonitoringRoutes, string>(DEFAULTS);
   }
 
   switch (action.type) {
     case SET_MONITORING_URL:
-      return state.merge({ [action.name]: action.url });
+      return state.set(action.name, action.url);
 
     default:
       return state;
@@ -48,7 +60,7 @@ const stateToProps = (desiredURLs: string[], state) => {
   return { urls };
 };
 
-export const connectToURLs = (...urls) => connect(state => stateToProps(urls, state));
+export const connectToURLs = (...urls: string[]) => connect(state => stateToProps(urls, state));
 
 // Determine if an Alert is silenced by a Silence (if all of the Silence's matchers match one of the Alert's labels)
 export const isSilenced = (alert, silence) => _.get(silence, 'status.state') === SilenceStates.Active &&

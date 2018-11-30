@@ -208,7 +208,7 @@ ssarChecks.forEach(({flag, resourceAttributes, after}) => {
     spec: { resourceAttributes },
   };
   const fn = (dispatch) => {
-    return k8sCreate(SelfSubjectAccessReviewModel, req) .then((res) => {
+    return k8sCreate(SelfSubjectAccessReviewModel, req).then((res) => {
       const allowed: boolean = res.status.allowed;
       setFlag(dispatch, flag, allowed);
       if (after) {
@@ -219,8 +219,18 @@ ssarChecks.forEach(({flag, resourceAttributes, after}) => {
   featureActions.push(fn);
 });
 
+export type FeatureStateData = {[x in FLAGS]: boolean};
+
+export interface FeatureState extends ImmutableMap<string, any> {
+  toJS(): FeatureStateData;
+  get<K extends keyof FeatureStateData>(key: K, notSetValue?: FeatureStateData[K]): FeatureStateData[K];
+  // TODO(alecmerdler): Define `getIn()` (is that even possible with deep nesting...?)
+  set<K extends keyof FeatureStateData>(key: K, val: FeatureStateData[K]): this;
+  // TODO(alecmerdler): Define `setIn()` (is that even possible with deep nesting...?)
+}
+
 export const featureReducerName = 'FLAGS';
-export const featureReducer = (state: ImmutableMap<string, any>, action) => {
+export const featureReducer = (state: FeatureState, action) => {
   if (!state) {
     return ImmutableMap(DEFAULTS_);
   }
