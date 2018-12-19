@@ -4,7 +4,7 @@ import * as React from 'react';
 import * as _ from 'lodash-es';
 import { match } from 'react-router-dom';
 
-import { SectionHeading, Firehose, MsgBox, LoadingBox, Kebab, navFactory } from '../utils';
+import { SectionHeading, Firehose, MsgBox, LoadingBox, Kebab, navFactory, ResourceLink } from '../utils';
 import { withFallback } from '../utils/error-boundary';
 import { CreateYAML } from '../create-yaml';
 import { CatalogSourceKind, SubscriptionKind, PackageManifestKind, visibilityLabel, OperatorGroupKind } from './index';
@@ -13,6 +13,7 @@ import { PackageManifestList } from './package-manifest';
 import { SubscriptionModel, CatalogSourceModel, PackageManifestModel, OperatorGroupModel } from '../../models';
 import { referenceForModel, K8sResourceKind } from '../../module/k8s';
 import { DetailsPage } from '../factory';
+import { PodsPage } from '../pod';
 
 export const CatalogSourceDetails: React.SFC<CatalogSourceDetailsProps> = ({obj, packageManifests, subscriptions, operatorGroups}) => {
   const toData = <T extends K8sResourceKind>(data: T[]) => ({loaded: true, data});
@@ -24,12 +25,22 @@ export const CatalogSourceDetails: React.SFC<CatalogSourceDetailsProps> = ({obj,
           <dl className="co-m-pane__details">
             <dt>Name</dt>
             <dd>{obj.spec.displayName}</dd>
+            <dt>Publisher</dt>
+            <dd>{obj.spec.publisher}</dd>
+            <dt>Type</dt>
+            <dd>{obj.spec.sourceType}</dd>
           </dl>
         </div>
         <div className="col-xs-4">
           <dl className="co-m-pane__details">
-            <dt>Publisher</dt>
-            <dd>{obj.spec.publisher}</dd>
+            { _.get(obj.status, 'registryService') && <React.Fragment>
+              <dt>Registry Service</dt>
+              <dd><ResourceLink kind="Service" name={obj.status.registryService.serviceName} namespace={obj.status.registryService.serviceNamespace} /></dd>
+            </React.Fragment> }
+            { _.get(obj.status, 'configMapReference') && <React.Fragment>
+              <dt>Config Map</dt>
+              <dd><ResourceLink kind="ConfigMap" name={obj.status.configMapReference.name} namespace={obj.status.configMapReference.namespace} /></dd>
+            </React.Fragment> }
           </dl>
         </div>
       </div>
@@ -49,6 +60,11 @@ export const CatalogSourceDetailsPage: React.SFC<CatalogSourceDetailsPageProps> 
   pages={[
     navFactory.details(CatalogSourceDetails),
     navFactory.editYaml(),
+    {
+      href: 'pods',
+      name: 'Pods',
+      component: () => <PodsPage showTitle={false} namespace={props.match.params.ns} selector={{matchLabels: {'olm.catalogSource': props.match.params.name}}} canCreate={false} />,
+    }
   ]}
   menuActions={Kebab.factory.common}
   resources={[{
