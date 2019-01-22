@@ -182,7 +182,7 @@ export class SubscriptionUpdates extends React.Component<SubscriptionUpdatesProp
             { _.get(obj.status, 'installedCSV') && installedCSV
               ? <Link to={`/k8s/ns/${obj.metadata.namespace}/${ClusterServiceVersionModel.plural}/${_.get(obj.status, 'installedCSV')}`}>1 installed</Link>
               : <span>0 installed</span> }
-            { _.get(obj.status, 'state') === SubscriptionState.SubscriptionStateUpgradePending && _.get(obj.status, 'installplan')
+            { _.get(obj.status, 'state') === SubscriptionState.SubscriptionStateUpgradePending || _.get(obj.status, 'state') === SubscriptionState.SubscriptionStateUpgradeAvailable && _.get(obj.status, 'installplan')
               ? <Link to={`/k8s/ns/${obj.metadata.namespace}/${InstallPlanModel.plural}/${_.get(obj.status, 'installplan.name')}`}>1 installing</Link>
               : <span>0 installing</span> }
           </div>
