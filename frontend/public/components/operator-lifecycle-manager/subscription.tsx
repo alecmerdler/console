@@ -100,6 +100,7 @@ export const SubscriptionDetails: React.SFC<SubscriptionDetailsProps> = (props) 
   const {obj, installedCSV, pkg} = props;
   const catalogNS = obj.spec.sourceNamespace || olmNamespace;
 
+  // TODO(alecmerdler): Replace with `useEffect()`
   const Effect: React.SFC<{promise: () => Promise<any>}> = ({promise}) => {
     promise();
     return null;
@@ -164,7 +165,7 @@ export class SubscriptionUpdates extends React.Component<SubscriptionUpdatesProp
     const channelModal = () => createSubscriptionChannelModal({subscription: obj, pkg, k8sUpdate: k8sUpdateAndWait});
     const approvalModal = () => createInstallPlanApprovalModal({obj, k8sUpdate: k8sUpdateAndWait});
     const installPlanPhase = (installPlan: InstallPlanKind) => {
-      switch (installPlan.status.phase) {
+      switch (_.get(installPlan.status, 'phase')) {
         case InstallPlanPhase.InstallPlanPhaseRequiresApproval: return '1 requires approval';
         case InstallPlanPhase.InstallPlanPhaseFailed: return '1 failed';
         default: return '1 installing';

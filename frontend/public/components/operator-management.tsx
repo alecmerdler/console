@@ -1,27 +1,13 @@
 import * as React from 'react';
-import {HorizontalNav, PageHeading} from './utils';
-import {SubscriptionsPage} from './operator-lifecycle-manager/subscription';
-import {PackageManifestsPage} from './operator-lifecycle-manager/package-manifest';
-import {InstallPlansPage} from './operator-lifecycle-manager/install-plan';
 
-const pages = [{
-  href: '',
-  name: 'Operator Catalogs',
-  component: PackageManifestsPage,
-}, {
-  href: 'subscriptions',
-  name: 'Operator Subscriptions',
-  component: SubscriptionsPage,
-}, {
-  href: 'installplans',
-  name: 'Install Plans',
-  component: InstallPlansPage,
-}];
+import { PageHeading } from './utils';
+import { SubscriptionsPage } from './operator-lifecycle-manager/subscription';
 
 export const OperatorManagementPage: React.SFC<OperatorManagementPageProps> = ({match}) =>
   <React.Fragment>
     <PageHeading detail={true} title="Operator Management" />
-    <HorizontalNav pages={pages} match={match} hideDivider noStatusBox={true} />
+    <p className="co-help-text">Operator Subscriptions keep your services up to date by tracking a channel in a package. The approval strategy determines either manual or automatic updates.</p>
+    <SubscriptionsPage match={match} namespace={match.params.ns} />
   </React.Fragment>;
 
 /* eslint-disable no-undef */

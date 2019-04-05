@@ -6,13 +6,12 @@ import { Helmet } from 'react-helmet';
 import { Alert } from 'patternfly-react';
 
 import { Firehose, LoadingBox, history, NsDropdown, resourcePathFromModel } from '../utils';
-import { referenceForModel, K8sResourceKind, k8sUpdate, k8sCreate, apiVersionForModel } from '../../module/k8s';
+import { referenceForModel, K8sResourceKind, k8sCreate, apiVersionForModel } from '../../module/k8s';
 import { SubscriptionModel, CatalogSourceConfigModel, OperatorGroupModel, PackageManifestModel } from '../../models';
 import { OperatorGroupKind, PackageManifestKind, ClusterServiceVersionLogo, SubscriptionKind, InstallPlanApproval, installModesFor, defaultChannelFor } from '../operator-lifecycle-manager';
 import { InstallModeType, isGlobal, installedFor, supports } from '../operator-lifecycle-manager/operator-group';
 import { RadioGroup, RadioInput } from '../radio';
 import { OPERATOR_HUB_CSC_BASE } from '../../const';
-import { getOperatorProviderType } from './operator-hub-utils';
 import { Tooltip } from '../utils/tooltip';
 
 // TODO: Use `redux-form` or React hooks instead of stateful component
@@ -67,30 +66,9 @@ export const OperatorHubSubscribeForm = withFormState((props: OperatorHubSubscri
 
   const {provider, channels = [], packageName} = props.packageManifest.data.status;
   const srcProvider = _.get(props.packageManifest.data, 'metadata.labels.opsrc-provider', 'custom');
-  const providerType = getOperatorProviderType(props.packageManifest.data);
 
   const submit = () => {
     const OPERATOR_HUB_CSC_NAME = `${OPERATOR_HUB_CSC_BASE}-${srcProvider}-${props.formState().targetNamespace}`;
-    const catalogSourceConfig = props.catalogSourceConfig.data.find(csc => csc.metadata.name === OPERATOR_HUB_CSC_NAME);
-    const hasBeenEnabled = !_.isEmpty(catalogSourceConfig) && _.includes(catalogSourceConfig.spec.packages.split(','), packageName);
-    const packages = _.isEmpty(catalogSourceConfig)
-      ? packageName
-      : _.uniq(catalogSourceConfig.spec.packages.split(',').concat([packageName])).join(',');
-
-    const newCatalogSourceConfig = {
-      apiVersion: apiVersionForModel(CatalogSourceConfigModel),
-      kind: CatalogSourceConfigModel.kind,
-      metadata: {
-        name: OPERATOR_HUB_CSC_NAME,
-        namespace: 'openshift-marketplace',
-      },
-      spec: {
-        targetNamespace: props.formState().targetNamespace,
-        packages: `${packages}`,
-        csDisplayName: `${providerType} Operators`,
-        csPublisher: `${providerType}`,
-      },
-    };
 
     const operatorGroup: OperatorGroupKind = {
       apiVersion: apiVersionForModel(OperatorGroupModel) as OperatorGroupKind['apiVersion'],
@@ -110,10 +88,6 @@ export const OperatorHubSubscribeForm = withFormState((props: OperatorHubSubscri
       metadata: {
         name: packageName,
         namespace: props.formState().targetNamespace,
-        labels: {
-          'csc-owner-name': OPERATOR_HUB_CSC_NAME,
-          'csc-owner-namespace': 'openshift-marketplace',
-        },
       },
       spec: {
         source: OPERATOR_HUB_CSC_NAME,
@@ -126,10 +100,8 @@ export const OperatorHubSubscribeForm = withFormState((props: OperatorHubSubscri
     };
 
     // TODO(alecmerdler): Handle and display error from creating kube objects...
-    return (!_.isEmpty(catalogSourceConfig) || hasBeenEnabled
-      ? k8sUpdate(CatalogSourceConfigModel, {...catalogSourceConfig, spec: {...catalogSourceConfig.spec, packages}}, 'openshift-marketplace', OPERATOR_HUB_CSC_NAME)
-      : k8sCreate(CatalogSourceConfigModel, newCatalogSourceConfig)
-    ).then(() => props.operatorGroup.data.some(group => group.metadata.namespace === props.formState().targetNamespace)
+    // FIXME(alecmerdler): Do not create CatalogSourceConfig
+    return (props.operatorGroup.data.some(group => group.metadata.namespace === props.formState().targetNamespace)
       ? Promise.resolve()
       : k8sCreate(OperatorGroupModel, operatorGroup))
       .then(() => k8sCreate(SubscriptionModel, subscription))

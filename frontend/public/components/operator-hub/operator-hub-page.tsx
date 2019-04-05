@@ -90,9 +90,12 @@ export const OperatorHubPage = withFallback((props: OperatorHubPageProps) => <Re
       }, {
         isList: true,
         kind: referenceForModel(PackageManifestModel),
-        namespace: 'openshift-marketplace',
+        // FIXME(alecmerdler): Allow viewing PackageManifests from any CatalogSource
+        // namespace: 'openshift-marketplace',
+        namespace: props.match.params.ns,
         prop: 'packageManifest',
-        selector: {matchLabels: {'openshift-marketplace': 'true'}},
+        // FIXME(alecmerdler): Allow viewing PackageManifests from any CatalogSource
+        // selector: {matchLabels: {'openshift-marketplace': 'true'}},
       }, {
         isList: true,
         kind: referenceForModel(SubscriptionModel),
