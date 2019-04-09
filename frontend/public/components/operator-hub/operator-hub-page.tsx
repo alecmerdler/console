@@ -18,7 +18,66 @@ import { OperatorHubItem } from './index';
 
 import * as operatorImg from '../../imgs/operator.svg';
 
-export const OperatorHubList: React.SFC<OperatorHubListProps> = (props) => {
+// export class OperatorHubList extends React.Component<OperatorHubListProps> {
+//   shouldComponentUpdate(nextProps) {
+//     return !_.isEqual(nextProps, this.props);
+//   }
+
+//   render() {
+//     const {catalogSourceConfig, operatorGroup, subscription, loaded, loadError, namespace = ''} = this.props;
+//     const sourceConfigs = _.find(_.get(catalogSourceConfig, 'data'), csc => _.startsWith(csc.metadata.name, OPERATOR_HUB_CSC_BASE));
+//     const items = _.get(this.props.packageManifest, 'data', [] as PackageManifestKind[]).map(pkg => {
+//       const currentCSVDesc = _.get(pkg, 'status.channels[0].currentCSVDesc', {});
+//       const currentCSVAnnotations = _.get(currentCSVDesc, 'annotations', {});
+//       const iconObj = _.get(currentCSVDesc, 'icon[0]');
+
+//       return {
+//         obj: pkg,
+//         kind: PackageManifestModel.kind,
+//         name: _.get(currentCSVDesc, 'displayName', pkg.metadata.name),
+//         uid: `${pkg.metadata.name}-${pkg.status.catalogSourceNamespace}`,
+//         installed: installedFor(subscription.data)(operatorGroup.data)(pkg.status.packageName)(namespace),
+//         subscription: subscriptionFor(subscription.data)(operatorGroup.data)(pkg.status.packageName)(namespace),
+//         // FIXME: Just use `installed`
+//         installState: installedFor(subscription.data)(operatorGroup.data)(pkg.status.packageName)(namespace) ? 'Installed' : 'Not Installed',
+//         imgUrl: iconObj ? `data:${iconObj.mediatype};base64,${iconObj.base64data}` : operatorImg,
+//         description: currentCSVAnnotations.description || currentCSVDesc.description,
+//         longDescription: currentCSVDesc.description || currentCSVAnnotations.description,
+//         provider: _.get(pkg, 'status.provider.name', _.get(pkg, 'metadata.labels.provider')),
+//         providerType: getOperatorProviderType(pkg),
+//         tags: pkg.metadata.tags,
+//         version: _.get(currentCSVDesc, 'version'),
+//         categories: currentCSVAnnotations.categories && _.map(currentCSVAnnotations.categories.split(','), category => category.trim()),
+//         catalogSource: _.get(pkg, 'status.catalogSource'),
+//         catalogSourceNamespace: _.get(pkg, 'status.catalogSourceNamespace'),
+//         ..._.pick(currentCSVAnnotations, [
+//           'certifiedLevel',
+//           'healthIndex',
+//           'repository',
+//           'containerImage',
+//           'createdAt',
+//           'support',
+//         ]),
+//       } as OperatorHubItem;
+//     });
+
+//     return <StatusBox
+//       data={_.sortBy(items, 'name')}
+//       loaded={loaded}
+//       loadError={loadError}
+//       label="Resources"
+//       EmptyMsg={() => (
+//         <MsgBox
+//           title="No OperatorHub Items Found"
+//           detail={<span>Please check that the OperatorHub is running and that you have created a valid OperatorSource. For more information about OperatorHub, please click <ExternalLink href="https://github.com/operator-framework/operator-marketplace" text="here" />.</span>}
+//         />
+//       )}>
+//       <OperatorHubTileView items={items} catalogSourceConfig={sourceConfigs} namespace={namespace} />
+//     </StatusBox>;
+//   }
+// }
+
+export const OperatorHubList: React.SFC<OperatorHubListProps> = React.memo((props) => {
   const {catalogSourceConfig, operatorGroup, subscription, loaded, loadError, namespace = ''} = props;
   const sourceConfigs = _.find(_.get(catalogSourceConfig, 'data'), csc => _.startsWith(csc.metadata.name, OPERATOR_HUB_CSC_BASE));
   const items = _.get(props.packageManifest, 'data', [] as PackageManifestKind[]).map(pkg => {
@@ -69,7 +128,10 @@ export const OperatorHubList: React.SFC<OperatorHubListProps> = (props) => {
     )}>
     <OperatorHubTileView items={items} catalogSourceConfig={sourceConfigs} namespace={namespace} />
   </StatusBox>;
-};
+}, (prevProps, nextProps) => {
+  const equal = _.isEqual(prevProps, nextProps);
+  return equal;
+});
 
 export const OperatorHubPage = withFallback((props: OperatorHubPageProps) => <React.Fragment>
   <Helmet>

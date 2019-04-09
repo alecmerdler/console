@@ -30,32 +30,56 @@ const withFormState = <P extends WithFormStateProps>(Component: React.ComponentT
       approval: InstallPlanApproval.Automatic,
     };
 
-    static getDerivedStateFromProps(nextProps, prevState) {
-      const updateChannel = !_.isEmpty(_.get(nextProps.packageManifest, 'data')) ? defaultChannelFor(nextProps.packageManifest.data) : null;
-      const installMode = prevState.installMode || !_.isEmpty(_.get(nextProps.packageManifest, 'data'))
-        ? installModesFor(nextProps.packageManifest.data)(updateChannel)
+    // static getDerivedStateFromProps(nextProps, prevState) {
+    //   const updateChannel = !_.isEmpty(_.get(nextProps.packageManifest, 'data')) ? defaultChannelFor(nextProps.packageManifest.data) : null;
+    //   const installMode = prevState.installMode || !_.isEmpty(_.get(nextProps.packageManifest, 'data'))
+    //     ? installModesFor(nextProps.packageManifest.data)(updateChannel)
+    //       .filter(({supported}) => supported)
+    //       .reduce((acc, mode) => mode.type === InstallModeType.InstallModeTypeAllNamespaces
+    //         ? InstallModeType.InstallModeTypeAllNamespaces
+    //         : acc,
+    //       InstallModeType.InstallModeTypeSingleNamespace)
+    //     : null;
+    //   let targetNamespace = prevState.targetNamespace || nextProps.targetNamespace;
+    //   if (installMode === InstallModeType.InstallModeTypeAllNamespaces) {
+    //     // FIXME(alecmerdler): Will throw error if no global `OperatorGroup`
+    //     targetNamespace = _.get(nextProps.operatorGroup, 'data', []).find(og => isGlobal(og)).metadata.namespace;
+    //   }
+
+    //   return {
+    //     targetNamespace,
+    //     installMode: prevState.installMode || installMode,
+    //     updateChannel: prevState.updateChannel || updateChannel,
+    //     approval: prevState.approval || InstallPlanApproval.Automatic,
+    //   };
+    // }
+
+    formState() {
+      const approval = this.state.approval || InstallPlanApproval.Automatic;
+      const updateChannel = this.state.updateChannel || !_.isEmpty(_.get(this.props.packageManifest, 'data')) ? defaultChannelFor(this.props.packageManifest.data) : null;
+      const installMode = this.state.installMode || !_.isEmpty(_.get(this.props.packageManifest, 'data'))
+        ? installModesFor(this.props.packageManifest.data)(updateChannel)
           .filter(({supported}) => supported)
           .reduce((acc, mode) => mode.type === InstallModeType.InstallModeTypeAllNamespaces
             ? InstallModeType.InstallModeTypeAllNamespaces
             : acc,
           InstallModeType.InstallModeTypeSingleNamespace)
         : null;
-      let targetNamespace = prevState.targetNamespace || nextProps.targetNamespace;
+      let targetNamespace = this.state.targetNamespace || this.props.targetNamespace;
       if (installMode === InstallModeType.InstallModeTypeAllNamespaces) {
         // FIXME(alecmerdler): Will throw error if no global `OperatorGroup`
-        targetNamespace = _.get(nextProps.operatorGroup, 'data', []).find(og => isGlobal(og)).metadata.namespace;
+        targetNamespace = _.get(this.props.operatorGroup, 'data', [] as OperatorGroupKind[]).find(og => isGlobal(og)).metadata.namespace;
       }
 
-      return {
-        targetNamespace,
-        installMode: prevState.installMode || installMode,
-        updateChannel: prevState.updateChannel || updateChannel,
-        approval: prevState.approval || InstallPlanApproval.Automatic,
-      };
+      return {updateChannel, installMode, targetNamespace, approval};
     }
 
     render() {
-      return <Component {...this.props} updateFormState={(state) => this.setState(state)} formState={() => this.state} />;
+      const updateFormState = (state) => {
+        console.log(state);
+        return this.setState(state);
+      }
+      return <Component {...this.props} updateFormState={updateFormState} formState={() => this.formState()} />;
     }
   };
 };
@@ -284,6 +308,9 @@ type FormData = {
 type WithFormStateProps = {
   updateFormState: (state: FormData) => void;
   formState: () => FormData;
+  operatorGroup: {loaded: boolean, data: OperatorGroupKind[]};
+  packageManifest: {loaded: boolean, data: PackageManifestKind};
+  targetNamespace?: string;
 };
 
 export type OperatorHubSubscribeFormProps = {

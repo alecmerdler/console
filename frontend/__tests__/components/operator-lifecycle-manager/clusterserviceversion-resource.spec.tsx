@@ -347,7 +347,7 @@ describe(ProvidedAPIsPage.displayName, () => {
   let wrapper: ShallowWrapper<ProvidedAPIsPageProps>;
 
   beforeEach(() => {
-    wrapper = shallow(<ProvidedAPIsPage.WrappedComponent obj={testClusterServiceVersion} />);
+    wrapper = shallow(<ProvidedAPIsPage.WrappedComponent obj={testClusterServiceVersion} providedAPIsModels={[testModel]} />);
   });
 
   it('renders a `StatusBox` if given app has no owned or required custom resources', () => {
@@ -421,7 +421,7 @@ describe(ProvidedAPIPage.displayName, () => {
   it('does not allow creation if "create" not included in the verbs for the model', () => {
     const readonlyModel = _.cloneDeep(testModel);
     readonlyModel.verbs = ['get'];
-    wrapper = shallow(<ProvidedAPIPage.WrappedComponent kindObj={readonlyModel} kind={referenceForModel(readonlyModel)} csv={testClusterServiceVersion} />);
+    wrapper = shallow(<ProvidedAPIPage.WrappedComponent providedAPIsModels={[readonlyModel]} namespace={'default'} kind={referenceForModel(readonlyModel)} obj={testClusterServiceVersion} />);
 
     expect(wrapper.find(ListPage).props().canCreate).toBe(false);
   });

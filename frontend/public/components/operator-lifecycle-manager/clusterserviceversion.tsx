@@ -243,33 +243,39 @@ export const ClusterServiceVersionDetails: React.SFC<ClusterServiceVersionDetail
   </React.Fragment>;
 };
 
-export const ClusterServiceVersionsDetailsPage: React.StatelessComponent<ClusterServiceVersionsDetailsPageProps> = (props) => {
-  const AllInstances: React.SFC<{obj: ClusterServiceVersionKind}> = ({obj}) => <ProvidedAPIsPage obj={obj} />;
-  AllInstances.displayName = 'AllInstances';
+export class ClusterServiceVersionsDetailsPage extends React.Component<ClusterServiceVersionsDetailsPageProps> {
+  shouldComponentUpdate(nextProps) {
+    return !_.isEqual(this.props, nextProps);
+  }
 
-  const instancePagesFor = (obj: ClusterServiceVersionKind) => {
-    return (providedAPIsFor(obj).length > 1 ? [{href: 'instances', name: 'All Instances', component: AllInstances}] : [])
-      .concat(providedAPIsFor(obj).map((desc: CRDDescription) => ({
-        href: referenceForProvidedAPI(desc),
-        name: desc.displayName,
-        /* eslint-disable-next-line react/display-name */
-        component: (instancesProps) => <ProvidedAPIPage {...instancesProps} csv={obj} kind={referenceForProvidedAPI(desc)} namespace={props.match.params.ns} />,
-      })));
-  };
+  render() {
+    const AllInstances: React.SFC<{obj: ClusterServiceVersionKind}> = ({obj}) => <ProvidedAPIsPage obj={obj} />;
+    AllInstances.displayName = 'AllInstances';
 
-  return <DetailsPage
-    {...props}
-    namespace={props.match.params.ns}
-    kind={referenceForModel(ClusterServiceVersionModel)}
-    name={props.match.params.name}
-    pagesFor={(obj: ClusterServiceVersionKind) => [
-      navFactory.details(ClusterServiceVersionDetails),
-      navFactory.editYaml(),
-      navFactory.events(ResourceEventStream),
-      ...instancePagesFor(obj),
-    ]}
-    menuActions={menuActions} />;
-};
+    const instancePagesFor = (obj: ClusterServiceVersionKind) => {
+      return (providedAPIsFor(obj).length > 1 ? [{href: 'instances', name: 'All Instances', component: AllInstances}] : [])
+        .concat(providedAPIsFor(obj).map((desc: CRDDescription) => ({
+          href: referenceForProvidedAPI(desc),
+          name: desc.displayName,
+          /* eslint-disable-next-line react/display-name */
+          component: () => <ProvidedAPIPage obj={obj} kind={referenceForProvidedAPI(desc)} namespace={this.props.match.params.ns} />,
+        })));
+    };
+
+    return <DetailsPage
+      {...this.props}
+      namespace={this.props.match.params.ns}
+      kind={referenceForModel(ClusterServiceVersionModel)}
+      name={this.props.match.params.name}
+      pagesFor={(obj: ClusterServiceVersionKind) => [
+        navFactory.details(ClusterServiceVersionDetails),
+        navFactory.editYaml(),
+        navFactory.events(ResourceEventStream),
+        ...instancePagesFor(obj),
+      ]}
+      menuActions={menuActions} />;
+  }
+}
 
 /* eslint-disable no-undef */
 export type ClusterServiceVersionsPageProps = {
@@ -318,7 +324,6 @@ export type ClusterServiceVersionRowProps = {
 ClusterServiceVersionList.displayName = 'ClusterServiceVersionList';
 ClusterServiceVersionsPage.displayName = 'ClusterServiceVersionsPage';
 CRDCard.displayName = 'CRDCard';
-ClusterServiceVersionsDetailsPage.displayName = 'ClusterServiceVersionsDetailsPage';
 ClusterServiceVersionDetails.displayName = 'ClusterServiceVersionDetails';
 ClusterServiceVersionRow.displayName = 'ClusterServiceVersionRow';
 ClusterServiceVersionHeader.displayName = 'ClusterServiceVersionHeader';

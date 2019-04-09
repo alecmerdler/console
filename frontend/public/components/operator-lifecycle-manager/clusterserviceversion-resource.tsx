@@ -5,14 +5,14 @@ import { Link, match } from 'react-router-dom';
 import * as _ from 'lodash-es';
 import { connect } from 'react-redux';
 
-import { ClusterServiceVersionResourceKind, ClusterServiceVersionKind, referenceForProvidedAPI } from './index';
+import { ClusterServiceVersionResourceKind, ClusterServiceVersionKind, referenceForProvidedAPI, CRDDescription } from './index';
 import { StatusDescriptor } from './descriptors/status';
 import { SpecDescriptor } from './descriptors/spec';
 // FIXME(alecmerdler): Should not be importing `StatusCapability` enum
 import { StatusCapability, Descriptor } from './descriptors/types';
 import { Resources } from './k8s-resource';
 import { List, MultiListPage, ListPage, ListHeader, ColHead, DetailsPage, CompactExpandButtons } from '../factory';
-import { ResourceLink, ResourceSummary, StatusBox, navFactory, Timestamp, LabelList, ResourceIcon, MsgBox, ResourceKebab, Kebab } from '../utils';
+import { ResourceLink, ResourceSummary, StatusBox, navFactory, Timestamp, LabelList, ResourceIcon, MsgBox, ResourceKebab, Kebab, LoadingBox } from '../utils';
 import { connectToModel } from '../../kinds';
 import { kindForReference, K8sResourceKind, OwnerReference, K8sKind, referenceFor, GroupVersionKind, referenceForModel } from '../../module/k8s';
 import { ClusterServiceVersionModel } from '../../models';
@@ -78,9 +78,11 @@ export const ClusterServiceVersionResourceList: React.SFC<ClusterServiceVersionR
     label="Application Resources" />;
 };
 
-const inFlightStateToProps = ({k8s}) => ({inFlight: k8s.getIn(['RESOURCES', 'inFlight'])});
+const providedAPIsStateToProps = ({k8s}, {obj}) => ({
+  providedAPIsModels: _.compact(_.get(obj, 'spec.customresourcedefinitions.owned', []).map((desc: CRDDescription) => k8s.getIn(['RESOURCES', 'models', referenceForProvidedAPI(desc)]))),
+});
 
-export const ProvidedAPIsPage = connect(inFlightStateToProps)(
+export const ProvidedAPIsPage = connect(providedAPIsStateToProps)(
   (props: ProvidedAPIsPageProps) => {
     const {obj} = props;
     const {owned = []} = obj.spec.customresourcedefinitions;
@@ -103,13 +105,13 @@ export const ProvidedAPIsPage = connect(inFlightStateToProps)(
       items: firehoseResources.map(({kind}) => ({id: kindForReference(kind), title: kindForReference(kind)})),
     }];
 
-    if (props.inFlight) {
-      return null;
+    if (firehoseResources.length === 0) {
+      return <StatusBox loaded={true} EmptyMsg={EmptyMsg} />;
     }
 
-    return firehoseResources.length > 0
-      ? <MultiListPage
-        {...props}
+    return _.isEmpty(props.providedAPIsModels)
+      ? <LoadingBox />
+      : <MultiListPage
         ListComponent={ClusterServiceVersionResourceList}
         filterLabel="Resources by name"
         resources={firehoseResources}
@@ -119,21 +121,20 @@ export const ProvidedAPIsPage = connect(inFlightStateToProps)(
         createButtonText={owned.length > 1 ? 'Create New' : `Create ${owned[0].displayName}`}
         flatten={flatten}
         rowFilters={firehoseResources.length > 1 ? rowFilters : null}
-      />
-      : <StatusBox loaded={true} EmptyMsg={EmptyMsg} />;
+      />;
   });
 
-export const ProvidedAPIPage = connectToModel((props: ProvidedAPIPageProps) => {
-  const {namespace, kind, kindsInFlight, csv} = props;
+export const ProvidedAPIPage = connect(providedAPIsStateToProps)((props: ProvidedAPIPageProps) => {
+  const {namespace, kind, obj, providedAPIsModels} = props;
 
-  return kindsInFlight
-    ? null
+  return _.isEmpty(providedAPIsModels)
+    ? <LoadingBox />
     : <ListPage
       kind={kind}
       ListComponent={ClusterServiceVersionResourceList}
-      canCreate={_.get(props.kindObj, 'verbs', [] as string[]).some(v => v === 'create')}
-      createProps={{to: `/k8s/ns/${csv.metadata.namespace}/${ClusterServiceVersionModel.plural}/${csv.metadata.name}/${kind}/new`}}
-      namespace={_.get(props.kindObj, 'namespaced') ? namespace : null} />;
+      canCreate={_.get(providedAPIsModels[0], 'verbs', [] as string[]).some(v => v === 'create')}
+      createProps={{to: `/k8s/ns/${obj.metadata.namespace}/${ClusterServiceVersionModel.plural}/${obj.metadata.name}/${kind}/new`}}
+      namespace={_.get(providedAPIsModels[0], 'namespaced') ? namespace : null} />;
 });
 
 export const ClusterServiceVersionResourceDetails = connectToModel(
@@ -260,14 +261,13 @@ export type ClusterServiceVersionResourceRowProps = {
 
 export type ProvidedAPIsPageProps = {
   obj: ClusterServiceVersionKind;
-  inFlight?: boolean;
+  providedAPIsModels: K8sKind[];
 };
 
 export type ProvidedAPIPageProps = {
-  csv: ClusterServiceVersionKind;
-  kindsInFlight?: boolean;
+  obj: ClusterServiceVersionKind;
   kind: GroupVersionKind;
-  kindObj: K8sKind;
+  providedAPIsModels: K8sKind[];
   namespace: string;
 };
 

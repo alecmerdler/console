@@ -133,7 +133,7 @@ export const NavBar: React.SFC<NavBarProps> = ({pages, basePath, hideDivider}) =
 };
 NavBar.displayName = 'NavBar';
 
-export class HorizontalNav extends React.PureComponent<HorizontalNavProps> {
+export class HorizontalNav extends React.Component<HorizontalNavProps> {
   static propTypes = {
     pages: PropTypes.arrayOf(PropTypes.shape({
       href: PropTypes.string,
@@ -149,6 +149,10 @@ export class HorizontalNav extends React.PureComponent<HorizontalNavProps> {
     }),
     noStatusBox: PropTypes.bool,
   };
+
+  shouldComponentUpdate(nextProps) {
+    return !_.isEqual(nextProps, this.props);
+  }
 
   renderContent(routes: any) {
     const {noStatusBox, obj, EmptyMsg, label} = this.props;

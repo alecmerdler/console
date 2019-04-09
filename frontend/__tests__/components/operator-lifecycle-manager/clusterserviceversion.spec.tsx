@@ -265,7 +265,7 @@ describe(ClusterServiceVersionDetails.displayName, () => {
   });
 });
 
-describe(ClusterServiceVersionsDetailsPage.displayName, () => {
+describe(ClusterServiceVersionsDetailsPage.name, () => {
   let wrapper: ShallowWrapper<ClusterServiceVersionsDetailsPageProps>;
   const name = 'example';
   const ns = 'default';
