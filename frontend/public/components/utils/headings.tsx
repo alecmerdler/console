@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as classNames from 'classnames';
 import * as _ from 'lodash-es';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
 import { ActionsMenu, ResourceIcon, KebabAction, resourcePath } from './index';
 import { ClusterServiceVersionLogo } from '../operator-lifecycle-manager';
@@ -14,6 +15,7 @@ import {
   referenceForModel,
 } from '../../module/k8s';
 import { ResourceItemDeleting } from '../overview/project-overview';
+import { queryFrom } from './k8s-watcher';
 
 export const BreadCrumbs: React.SFC<BreadCrumbsProps> = ({breadcrumbs}) => (
   <ol className="breadcrumb">
@@ -62,9 +64,22 @@ export const PageHeading = connectToModel((props: PageHeadingProps) => {
         { hasButtonActions && <ActionButtons actionButtons={buttonActions.map(a => a(kindObj, data))} /> }
         { hasMenuActions && <ActionsMenu actions={menuActions.map(a => a(kindObj, data))} /> }
       </div> }
+      {/* TODO(alecmerdler): Show active k8s API calls (and `kubectl` equivalents) */}
+      <WhatAmILookingAt />
     </h1>
     {props.children}
   </div>;
+});
+
+const k8sStateToProps = ({k8s}) => ({
+  apiCalls: _.reduce(k8s.toJS(), (reduxIDs, value, key) => _.get(value, 'loaded') ? [...reduxIDs, key] : reduxIDs, [])
+    .map((reduxID) => queryFrom(reduxID)),
+});
+
+export const WhatAmILookingAt = connect(k8sStateToProps)((props) => {
+  return <a onClick={() => console.log(props.apiCalls.map(call => `kubectl get ${call.plural}`))}>
+    What am I looking at?
+  </a>;
 });
 
 export const SectionHeading: React.SFC<SectionHeadingProps> = ({text, children, style}) => <h2 className="co-section-heading" style={style}>{text}{children}</h2>;

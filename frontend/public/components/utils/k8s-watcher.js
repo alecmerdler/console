@@ -9,6 +9,14 @@ export const makeReduxID = (k8sKind = {}, query) => {
   return `${k8sKind.plural}${qs}`;
 };
 
+/** @type {(reduxID: string) => {[key: string]: string}} */
+export const queryFrom = (reduxID) => {
+  const [plural, queryString = '{}'] = reduxID.split('---');
+  const query = JSON.parse(queryString);
+
+  return {plural, ...query};
+};
+
 /** @type {(namespace: string, labelSelector?: any, fieldSelector?: any, name?: string) => {[key: string]: string}} */
 export const makeQuery = (namespace, labelSelector, fieldSelector, name, limit) => {
   const query = {};
