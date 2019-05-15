@@ -6,10 +6,10 @@ import { Route, Switch, Link } from 'react-router-dom';
 
 import { EmptyBox, StatusBox } from '.';
 import { PodsPage } from '../pod';
-import { AsyncComponent } from './async';
+import { AsyncComponent, withAsync } from './async';
 import { K8sResourceKind } from '../../module/k8s';
 
-const editYamlComponent = (props) => <AsyncComponent loader={() => import('../edit-yaml').then(c => c.EditYAML)} obj={props.obj} />;
+// const editYamlComponent = (props) => <AsyncComponent loader={() => import('../edit-yaml').then(c => c.EditYAML)} obj={props.obj} />;
 export const viewYamlComponent = (props) => <AsyncComponent loader={() => import('../edit-yaml').then(c => c.EditYAML)} obj={props.obj} readOnly={true} />;
 
 class PodsComponent extends React.PureComponent<PodsComponentProps> {
@@ -49,7 +49,7 @@ export const navFactory: NavFactory = {
     name: 'Logs',
     component,
   }),
-  editYaml: (component = editYamlComponent) => ({
+  editYaml: (component = withAsync(React.lazy(() => import('../edit-yaml').then(m => ({default: m.EditYAML}))))) => ({
     href: 'yaml',
     name: 'YAML',
     component,

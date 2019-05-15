@@ -1,6 +1,7 @@
 import * as _ from 'lodash-es';
 import * as React from 'react';
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
+
 import { ALL_NAMESPACES_KEY, FLAGS } from '../const';
 import { connectToFlags, flagPending } from '../reducers/features';
 import { GlobalNotifications } from './global-notifications';
@@ -70,7 +71,13 @@ const DefaultPage = connectToFlags(FLAGS.OPENSHIFT)(({ flags }) => {
   return <Redirect to={statusPage} />;
 });
 
+const ClusterStatus = React.lazy(() => import('./cluster-overview' /* webpackChunkName: "cluster-overview" */).then(m => ({default: m.ClusterOverviewPage})));
+
 const LazyRoute = (props) => <Route {...props} render={(componentProps) => <AsyncComponent loader={props.loader} kind={props.kind} {...componentProps} />} />;
+
+const LazierRoute = (props) => <React.Suspense fallback={<div>Loading...</div>}>
+  <Route {...props} render={(componentProps) => <AsyncComponent loader={props.loader} kind={props.kind} {...componentProps} />} />
+</React.Suspense>;
 
 // use `withRouter` to force a re-render when routes change since we are using React.memo
 const AppContents = withRouter(React.memo(() => (
@@ -82,7 +89,7 @@ const AppContents = withRouter(React.memo(() => (
         <Switch>
           <Route path={['/all-namespaces', '/ns/:ns']} component={RedirectComponent} />
 
-          <LazyRoute path="/cluster-status" exact loader={() => import('./cluster-overview' /* webpackChunkName: "cluster-overview" */).then(m => m.ClusterOverviewPage)} />
+          <Route path="/cluster-status" exact component={ClusterStatus} />
           <LazyRoute path="/overview/all-namespaces" exact loader={() => import('./cluster-overview' /* webpackChunkName: "cluster-overview" */).then(m => m.ClusterOverviewPage)} />
           <LazyRoute path="/overview/ns/:ns" exact loader={() => import('./overview' /* webpackChunkName: "overview" */).then(m => m.OverviewPage)} />
           <Route path="/overview" exact component={NamespaceRedirect} />

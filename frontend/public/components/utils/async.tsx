@@ -3,6 +3,10 @@ import * as _ from 'lodash-es';
 
 import { LoadingBox } from './status-box';
 
+export const withAsync = <P extends {}>(Component: React.LazyExoticComponent<React.ComponentType<P>>) => (props: P) => <React.Suspense fallback={<div>FIXME(alecmerdler): Better fallback...</div>}>
+  <Component {...props as any} />
+</React.Suspense>;
+
 /**
  * FIXME: Comparing two functions is not the *best* solution, but we can handle false negatives.
  */
@@ -13,6 +17,7 @@ enum AsyncComponentError {
   ComponentNotFound = 'COMPONENT_NOT_FOUND',
 }
 
+// FIXME(alecmerdler): Use `React.lazy` instead
 export class AsyncComponent extends React.Component<AsyncComponentProps, AsyncComponentState> {
   state: AsyncComponentState = {Component: null, loader: null};
   props: AsyncComponentProps;
