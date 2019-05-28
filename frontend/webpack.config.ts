@@ -1,4 +1,5 @@
 /* eslint-env node */
+
 import * as webpack from 'webpack';
 import * as path from 'path';
 import * as glob from 'glob';
@@ -7,6 +8,7 @@ import * as HtmlWebpackPlugin from 'html-webpack-plugin';
 import * as ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import * as VirtualModulesPlugin from 'webpack-virtual-modules';
+import * as WorkboxPlugin from 'workbox-webpack-plugin';
 
 import { readPackages, getActivePluginPackages, getActivePluginsModule } from '@console/plugin-sdk/src/codegen';
 
@@ -114,6 +116,10 @@ const config: webpack.Configuration = {
       template: './public/index.html',
       production: NODE_ENV === 'production',
       chunksSortMode: 'none',
+    }),
+    new WorkboxPlugin.GenerateSW({
+      clientsClaim: true,
+      skipWaiting: true,
     }),
     extractCSS,
   ],

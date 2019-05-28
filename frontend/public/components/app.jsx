@@ -177,18 +177,26 @@ window.onunhandledrejection = function(e) {
 };
 
 if ('serviceWorker' in navigator) {
-  if (window.SERVER_FLAGS.loadTestFactor > 1) {
-    // eslint-disable-next-line import/no-unresolved
-    import('file-loader?name=load-test.sw.js!../load-test.sw.js')
-      .then(() => navigator.serviceWorker.register('/load-test.sw.js'))
-      .then(() => new Promise(r => navigator.serviceWorker.controller ? r() : navigator.serviceWorker.addEventListener('controllerchange', () => r())))
-      .then(() => navigator.serviceWorker.controller.postMessage({topic: 'setFactor', value: window.SERVER_FLAGS.loadTestFactor}));
-  } else {
-    navigator.serviceWorker.getRegistrations()
-      .then((registrations) => registrations.forEach(reg => reg.unregister()))
-      // eslint-disable-next-line no-console
-      .catch(e => console.warn('Error unregistering service workers', e));
-  }
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      // eslint-disable no-console
+      .then(registration => console.log('SW registered: ', registration))
+      .catch(registrationError => console.log('SW registration failed: ', registrationError));
+      // eslint-enable no-console
+  });
+  // TODO(alecmerdler): Remove load-testing service worker
+  // if (window.SERVER_FLAGS.loadTestFactor > 1) {
+  //   // eslint-disable-next-line import/no-unresolved
+  //   import('file-loader?name=load-test.sw.js!../load-test.sw.js')
+  //     .then(() => navigator.serviceWorker.register('/load-test.sw.js'))
+  //     .then(() => new Promise(r => navigator.serviceWorker.controller ? r() : navigator.serviceWorker.addEventListener('controllerchange', () => r())))
+  //     .then(() => navigator.serviceWorker.controller.postMessage({topic: 'setFactor', value: window.SERVER_FLAGS.loadTestFactor}));
+  // } else {
+  //   navigator.serviceWorker.getRegistrations()
+  //     .then((registrations) => registrations.forEach(reg => reg.unregister()))
+  //     // eslint-disable-next-line no-console
+  //     .catch(e => console.warn('Error unregistering service workers', e));
+  // }
 }
 
 render((
