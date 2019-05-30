@@ -12,7 +12,7 @@ import 'brace/theme/clouds';
 import 'brace/ext/language_tools';
 import 'brace/snippets/yaml';
 
-import { k8sCreate, k8sUpdate, referenceFor, getCompletions, groupVersionFor, snippets, referenceForModel } from '../module/k8s';
+import { k8sCreate, k8sUpdate, referenceFor, getCompletions, groupVersionFor, snippets, referenceForModel, K8sResourceKind } from '../module/k8s';
 import { checkAccess, history, Loading, resourceObjPath } from './utils';
 import { ExploreTypeSidebar } from './sidebars/explore-type-sidebar';
 import { ResourceSidebar } from './sidebars/resource-sidebar';
@@ -38,9 +38,29 @@ const stateToProps = ({k8s, UI}) => ({
   models: k8s.getIn(['RESOURCES', 'models']),
 });
 
+export const EditYAMLFC = connect(stateToProps)((props) => {
+  const [error, setError] = React.useState(null);
+  const [success, setSuccess] = React.useState(null);
+  const [success, setSuccess] = React.useState(null);
+  const [height, setHeight] = React.useState(500);
+  const [initialized, setInitialized] = React.useState(false);
+  const [stale, setStale] = React.useState(false);
+  const [sampleObj, setSampleObj] = React.useState(props.sampleObj);
+  const [fileUpload, setFileUpload] = React.useState(props.fileUpload);
+  
+  const getModel = (obj: K8sResourceKind) => {
+    if (_.isEmpty(obj)) {
+      return null;
+    }
+    const { models } = props;
+    return models.get(referenceFor(obj)) || models.get(obj.kind);
+  }
+});
+
 /**
  * This component loads the entire Ace editor library (~100kB) with it.
  * Consider using `AsyncComponent` to dynamically load this component when needed.
+ * TODO(alecmerdler): Refactor to function component
  */
 /** @augments {React.Component<{obj?: any, create: boolean, kind: string, redirectURL?: string}>} */
 export const EditYAML = connect(stateToProps)(
@@ -227,7 +247,7 @@ export const EditYAML = connect(stateToProps)(
       this.resize_();
     }
 
-    save() {
+    save(dryRun = false) {
       let obj;
       try {
         obj = safeLoad(this.doc.getValue());
@@ -291,9 +311,16 @@ export const EditYAML = connect(stateToProps)(
           delete obj.metadata.resourceVersion;
           redirect = true;
         }
-        action(model, obj, newNamespace, newName)
+        const options = dryRun
+          ? {dryRun: 'All'}
+          : {};
+        action(model, obj, newNamespace, newName, options)
           .then(o => {
-            if (redirect) {
+            if (dryRun) {
+              const success = `${newName} would be successfully applied`;
+              this.setState({success, error: null, notAllowed: true});
+              this.loadYaml(true, o);
+            } else if (redirect) {
               history.push(this.props.redirectURL || resourceObjPath(o, referenceFor(o)));
               // TODO: (ggreer). show message on new page. maybe delete old obj?
               return;
@@ -371,6 +398,8 @@ export const EditYAML = connect(stateToProps)(
                       </p>}
                       {create && <button type="submit" className="btn btn-primary" id="save-changes" onClick={() => this.save()}>Create</button>}
                       {!create && !readOnly && <button type="submit" className="btn btn-primary" id="save-changes" onClick={() => this.save()}>Save</button>}
+                      <button type="submit" className="btn btn-primary" id="dry-run" onClick={() => this.save(true)}>Dry Run</button>
+                      <button className="btn btn-default" id="reset-dry-run" onClick={() => console.log('TODO(alecmerdler): Button to clear dry run results')}>Clear</button>
                       {!create && <button type="submit" className="btn btn-default" id="reload-object" onClick={() => this.reload()}>Reload</button>}
                       <button className="btn btn-default" id="cancel" onClick={() => this.onCancel()}>Cancel</button>
                       {download && <button type="submit" className="btn btn-default pull-right hidden-sm hidden-xs" onClick={() => this.download()}><i className="fa fa-download"></i>&nbsp;Download</button>}
@@ -389,3 +418,7 @@ export const EditYAML = connect(stateToProps)(
     }
   }
 );
+
+export type EditYAMLProps = {
+
+};

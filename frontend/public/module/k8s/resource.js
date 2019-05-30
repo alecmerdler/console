@@ -73,9 +73,10 @@ export const k8sCreate = (kind, data, opts = {}) => {
   return coFetchJSON.post(resourceURL(kind, Object.assign({ns: data.metadata.namespace}, opts)), data);
 };
 
-export const k8sUpdate = (kind, data, ns, name) => coFetchJSON.put(
+export const k8sUpdate = (kind, data, ns, name, opts = {}) => coFetchJSON.put(
   resourceURL(kind, {ns: ns || data.metadata.namespace, name: name || data.metadata.name}),
-  data
+  data,
+  opts,
 );
 
 export const k8sPatch = (kind, resource, data) => coFetchJSON.patch(
