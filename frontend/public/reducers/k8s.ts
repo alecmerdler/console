@@ -74,9 +74,6 @@ export default (state: K8sState, action: K8sAction): K8sState => {
   if (!state) {
     return fromJS({RESOURCES: {inFlight: false, models: ImmutableMap<string, K8sKind>()}});
   }
-  // const {k8sObjects, id} = action;
-  // const list: ImmutableMap<string, any> = state.getIn([id, 'data']);
-
   let newList;
 
   switch (action.type) {
@@ -109,6 +106,9 @@ export default (state: K8sState, action: K8sAction): K8sState => {
         .setIn(['RESOURCES', 'namespacedSet'], action.payload.resources.namespacedSet)
         .setIn(['RESOURCES', 'preferredVersions'], action.payload.resources.preferredVersions)
         .setIn(['RESOURCES', 'inFlight'], false);
+
+    case ActionType.ReceivedOpenAPI:
+      return state.setIn(['RESOURCES', 'openAPI'], action.payload.openAPI);
 
     case ActionType.FilterList:
       return state.setIn([action.payload.id, 'filters', action.payload.name], action.payload.value);

@@ -7,12 +7,15 @@ import { k8sList, k8sWatch, k8sGet } from '../module/k8s/resource';
 import { makeReduxID } from '../components/utils/k8s-watcher';
 import { APIServiceModel } from '../models';
 import { coFetchJSON } from '../co-fetch';
-import { referenceForModel, K8sResourceKind, K8sKind } from '../module/k8s';
+import { referenceForModel, K8sResourceKind, K8sKind, fetchSwagger, GroupVersionKind, SwaggerDefinitions } from '../module/k8s';
+import { GetState } from '../redux';
 
 export enum ActionType {
   ReceivedResources = 'resources',
   GetResourcesInFlight = 'getResourcesInFlight',
   SetAPIGroups = 'setAPIGroups',
+
+  ReceivedOpenAPI = 'receivedOpenAPI',
 
   StartWatchK8sObject = 'startWatchK8sObject',
   StartWatchK8sList = 'startWatchK8sList',
@@ -46,23 +49,31 @@ export const modifyObject = (id: string, k8sObjects: K8sResourceKind) => action(
 export const getResourcesInFlight = () => action(ActionType.GetResourcesInFlight);
 export const receivedResources = (resources: DiscoveryResources) => action(ActionType.ReceivedResources, {resources});
 
-export const getResources = () => (dispatch: Dispatch) => {
+export const getResources = () => (dispatch) => {
   dispatch(getResourcesInFlight());
   getResources_()
     .then(resources => {
       // Cache the resources whenever discovery completes to improve console load times.
       cacheResources(resources);
       dispatch(receivedResources(resources));
+      dispatch(ensureOpenAPI(resources.models.map(m => referenceForModel(m))));
     })
     // eslint-disable-next-line no-console
     .catch(err => console.error(err));
+};
+
+export const receivedOpenAPI = (openAPI: SwaggerDefinitions) => action(ActionType.ReceivedOpenAPI, {openAPI});
+
+export const ensureOpenAPI = (knownGVKs: GroupVersionKind[]) => (dispatch: Dispatch) => {
+  fetchSwagger(knownGVKs)
+    .then(definitions => dispatch(receivedOpenAPI(definitions)));
 };
 
 export const filterList = (id: string, name: string, value: string) => action(ActionType.FilterList, {id, name, value});
 
 export const startWatchK8sObject = (id: string) => action(ActionType.StartWatchK8sObject, {id});
 
-export const watchK8sObject = (id: string, name: string, namespace: string, query: {[key: string]: string}, k8sType: K8sKind) => (dispatch: Dispatch, getState) => {
+export const watchK8sObject = (id: string, name: string, namespace: string, query: {[key: string]: string}, k8sType: K8sKind) => (dispatch: Dispatch, getState: GetState) => {
   if (id in REF_COUNTS) {
     REF_COUNTS[id] += 1;
     return nop;
@@ -120,7 +131,7 @@ export const stopK8sWatch = (id: string) => (dispatch: Dispatch) => {
 
 export const startWatchK8sList = (id: string, query: {[key: string]: string}) => action(ActionType.StartWatchK8sList, {id, query});
 
-export const watchK8sList = (id: string, query: {[key: string]: string}, k8skind: K8sKind, extraAction?) => (dispatch, getState) => {
+export const watchK8sList = (id: string, query: {[key: string]: string}, k8skind: K8sKind, extraAction?) => (dispatch, getState: GetState) => {
   // Only one watch per unique list ID
   if (id in REF_COUNTS) {
     REF_COUNTS[id] += 1;
@@ -271,6 +282,7 @@ const k8sActions = {
   modifyObject,
   getResourcesInFlight,
   receivedResources,
+  receivedOpenAPI,
   filterList,
   startWatchK8sObject,
   startWatchK8sList,

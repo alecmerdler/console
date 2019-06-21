@@ -2,7 +2,8 @@ import * as _ from 'lodash-es';
 
 import { STORAGE_PREFIX } from '../../const';
 import { coFetchJSON } from '../../co-fetch';
-import { K8sKind, referenceForModel, SwaggerDefinitions } from './';
+import { K8sKind, referenceForModel, GroupVersionKind } from './';
+import { referenceForGroupVersionKind } from './k8s';
 
 const SWAGGER_LOCAL_STORAGE_KEY = `${STORAGE_PREFIX}/swagger-definitions`;
 const SWAGGER_TIMESTAMP_LOCAL_STORAGE_KEY = `${STORAGE_PREFIX}/swagger-last-updated`;
@@ -31,12 +32,30 @@ export const getStoredSwagger = (): SwaggerDefinitions => {
   }
 };
 
-const isSwaggerStale = () => {
+const isSwaggerStale = (swagger: SwaggerDefinitions) => (knownGVKs: GroupVersionKind[]) => {
   // Avoid refreshing the entire document on cellular connections.
   const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
   if (connection && connection.effectiveType === 'cellular') {
     return false;
   }
+
+  // FIXME(alecmerdler): Refresh OpenAPI definitions when new models are added
+  const newModels = _.some(knownGVKs, groupVersionKind => {
+    const definition = _.find(swagger, (def) => {
+      const {group, version, kind} = _.get(def, 'x-kubernetes-group-version-kind', [{}])[0];
+
+      if (groupVersionKind === 'core~v1~Pod' && !_.isEmpty(kind)) {
+        console.log(kind);
+      }
+
+      return referenceForGroupVersionKind(group || 'core')(version)(kind) === groupVersionKind;
+    });
+    console.log(groupVersionKind, definition);
+    console.log('asdfsadf');
+    
+    return _.isUndefined(definition);
+  });
+
   // Store the swagger definitions in localStorage, but refresh once per day.
   // This document is large, so avoid reloading it too often.
   const lastUpdated = Number(window.localStorage.getItem(SWAGGER_TIMESTAMP_LOCAL_STORAGE_KEY));
@@ -50,10 +69,10 @@ const storeSwagger = (swagger: SwaggerAPISpec) => {
   window.localStorage.setItem(SWAGGER_TIMESTAMP_LOCAL_STORAGE_KEY, `${Date.now()}`);
 };
 
-export const fetchSwagger = async(): Promise<SwaggerDefinitions> => {
+export const fetchSwagger = async(knownGVKs: GroupVersionKind[]): Promise<SwaggerDefinitions> => {
   try {
     const storedSwagger = getStoredSwagger();
-    if (storedSwagger && !isSwaggerStale()) {
+    if (storedSwagger && !isSwaggerStale(storedSwagger)(knownGVKs)) {
       return storedSwagger;
     }
 

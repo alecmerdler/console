@@ -139,9 +139,6 @@ store.dispatch(detectFeatures());
 // Global timer to ensure all <Timestamp> components update in sync
 setInterval(() => store.dispatch(UIActions.updateTimestamps(Date.now())), 10000);
 
-// Fetch swagger on load if it's stale.
-fetchSwagger();
-
 // Used by GUI tests to check for unhandled exceptions
 window.windowError = false;
 

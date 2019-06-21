@@ -27,6 +27,8 @@ function createThunkMiddleware(extraArgument?) {
 const thunk = createThunkMiddleware();
 (thunk as any).withExtraArgument = createThunkMiddleware;
 
+export type GetState = () => RootState;
+
 export type RootState = {
   k8s: K8sState;
   UI: UIState;

@@ -23,6 +23,7 @@ export const ExploreType: React.FC<ExploreTypeProps> = (props) => {
     return null;
   }
 
+  // TODO(alecmerdler): `connect()` to Redux instead to get Swagger definitions
   const allDefinitions: SwaggerDefinitions = getStoredSwagger();
   if (!allDefinitions) {
     return null;
