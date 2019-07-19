@@ -99,7 +99,9 @@ export const OperatorHubSubscribeForm: React.FC<OperatorHubSubscribeFormProps> =
         namespace: selectedTargetNamespace,
       },
       spec: {
-        targetNamespaces: [selectedTargetNamespace],
+        targetNamespaces: selectedInstallMode === InstallModeType.InstallModeTypeOwnNamespace
+          ? [selectedTargetNamespace]
+          : ['']
       },
     };
 
@@ -170,6 +172,16 @@ export const OperatorHubSubscribeForm: React.FC<OperatorHubSubscribeFormProps> =
                 <div className="co-m-radio-desc">
                   <p className="text-muted">{descFor(InstallModeType.InstallModeTypeAllNamespaces)}</p>
                 </div>
+                {/* TODO(alecmerdler): Namespace dropdown for `AllNamespaces` Operators to be installed in different namespace */}
+                { selectedInstallMode === InstallModeType.InstallModeTypeAllNamespaces && <div style={{marginLeft: '20px'}}>
+                  <NsDropdown
+                    id="dropdown-selectbox"
+                    selectedKey={selectedTargetNamespace}
+                    onChange={(ns: string) => {
+                      setTargetNamespace(ns);
+                      setCannotResolve(false);
+                    }} />
+                </div> }
               </RadioInput>
             </Tooltip>
           </div>
