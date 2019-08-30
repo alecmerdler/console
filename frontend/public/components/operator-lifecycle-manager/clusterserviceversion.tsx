@@ -204,15 +204,15 @@ const subscriptionFor = (csv: ClusterServiceVersionKind) => (subs: SubscriptionK
 });
 
 export const ClusterServiceVersionList: React.SFC<ClusterServiceVersionListProps> = (props) => {
-
   const EmptyMsg = () => <MsgBox title="No Operators match filter" detail="" />;
 
   const allItemsFilteredDetail = <React.Fragment>
-    <div>No Operators are available for project <span className="co-clusterserviceversion-empty__state__namespace">{UIActions.getActiveNamespace()}</span></div>
+    <div>No Operators are available for this namespace</div>
     <div>Discover and install Operators from the <a href="/operatorhub">OperatorHub</a>.</div>
   </React.Fragment>;
   const AllItemsFilteredMsg = () => <MsgBox title="No Operators Found" detail={allItemsFilteredDetail} />;
 
+  console.log(props.data);
   return <Table
     {...props}
     aria-label="Installed Operators"
@@ -245,7 +245,8 @@ export const ClusterServiceVersionsPage: React.FC<ClusterServiceVersionsPageProp
       flatten={({clusterServiceVersion, subscription}) => _.get(clusterServiceVersion, 'data', [] as ClusterServiceVersionKind[])
         .concat(_.get(subscription, 'data', [] as SubscriptionKind[])
           .filter(sub => ['', sub.metadata.namespace].includes(props.namespace) && _.isNil(_.get((sub as SubscriptionKind).status, 'installedCSV'))))
-      }
+        .filter((obj, i, all) => referenceFor(obj) === referenceForModel(SubscriptionModel) && all.some(({metadata}) => metadata.name === _.get(obj.status, 'currentCSV')))
+        }
       namespace={props.namespace}
       ListComponent={ClusterServiceVersionList}
       helpText={helpText}
