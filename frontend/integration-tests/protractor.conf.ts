@@ -113,6 +113,7 @@ export const config: Config = {
     return new Promise((resolve) => htmlReporter.afterLaunch(resolve.bind(this, exitCode)));
   },
   suites: {
+    bbb: ['tests/base.scenario.ts'],
     filter: suite(['tests/filter.scenario.ts']),
     annotation: suite(['tests/modal-annotations.scenario.ts']),
     environment: suite(['tests/environment.scenario.ts']),
